@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "28f45d6e-ee7d-4594-a511-c71a44f863f0"
+				"spark.autotune.trackingId": "75077ca0-1352-4d68-9218-f60140d444d8"
 			}
 		},
 		"metadata": {
@@ -59,14 +59,18 @@
 						"transient": {
 							"deleting": false
 						}
-					}
+					},
+					"microsoft": {
+						"language": "python"
+					},
+					"collapsed": false
 				},
 				"source": [
-					"#Read csv\r\n",
-					"csv_df = spark.read.csv(\"abfss://data@synapseworkspace.dfs.core.windows.net/sales_data/poscsv/*\", header=True, inferSchema=True)\r\n",
-					""
+					"%%pyspark\r\n",
+					"df = spark.read.load('abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/poscsv/**/*.csv',format='csv',header=True)\r\n",
+					"display(df.limit(10))"
 				],
-				"execution_count": 9
+				"execution_count": 26
 			},
 			{
 				"cell_type": "code",
@@ -87,6 +91,30 @@
 					"posparquet\")"
 				],
 				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "python"
+					},
+					"collapsed": false
+				},
+				"source": [
+					"%%pyspark\r\n",
+					"df = spark.read.load('abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/posparquet/2021/Q1/February/sales_data_2021_Q1_February.parquet', format='parquet')\r\n",
+					"display(df.limit(10))"
+				],
+				"execution_count": 12
 			}
 		]
 	}
