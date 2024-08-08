@@ -281,6 +281,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/Combine parquet')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- This is auto-generated code\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://datalake5hueysr.dfs.core.windows.net/files/sales_data/posparquet/**',\n        FORMAT = 'PARQUET'\n    ) AS [result]\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Combine data')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
@@ -297,7 +317,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "02da3358-5f45-4392-ab95-3423f3eb0f4c"
+						"spark.autotune.trackingId": "14658988-0586-4dbe-8f4b-8db1399eca10"
 					}
 				},
 				"metadata": {
@@ -315,7 +335,20 @@
 				"cells": [
 					{
 						"cell_type": "code",
+						"metadata": {
+							"microsoft": {
+								"language": "sparksql"
+							}
+						},
 						"source": [
+							"%%sql\r\n",
+							"SELECT\r\n",
+							"    TOP 100 *\r\n",
+							"FROM\r\n",
+							"    OPENROWSET(\r\n",
+							"        BULK 'https://datalake5hueysr.dfs.core.windows.net/files/sales_data/posparquet/**',\r\n",
+							"        FORMAT = 'PARQUET'\r\n",
+							"    ) AS [result]\r\n",
 							""
 						],
 						"outputs": [],
