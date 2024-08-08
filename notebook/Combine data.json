@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "75077ca0-1352-4d68-9218-f60140d444d8"
+				"spark.autotune.trackingId": "33441eca-d48e-47e3-9476-69e405e35c80"
 			}
 		},
 		"metadata": {
@@ -114,7 +114,7 @@
 					"df = spark.read.load('abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/posparquet/2021/Q1/February/sales_data_2021_Q1_February.parquet', format='parquet')\r\n",
 					"display(df.limit(10))"
 				],
-				"execution_count": 12
+				"execution_count": 27
 			}
 		]
 	}
