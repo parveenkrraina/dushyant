@@ -13,7 +13,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "02da3358-5f45-4392-ab95-3423f3eb0f4c"
+				"spark.autotune.trackingId": "14658988-0586-4dbe-8f4b-8db1399eca10"
 			}
 		},
 		"metadata": {
@@ -31,7 +31,20 @@
 		"cells": [
 			{
 				"cell_type": "code",
+				"metadata": {
+					"microsoft": {
+						"language": "sparksql"
+					}
+				},
 				"source": [
+					"%%sql\r\n",
+					"SELECT\r\n",
+					"    TOP 100 *\r\n",
+					"FROM\r\n",
+					"    OPENROWSET(\r\n",
+					"        BULK 'https://datalake5hueysr.dfs.core.windows.net/files/sales_data/posparquet/**',\r\n",
+					"        FORMAT = 'PARQUET'\r\n",
+					"    ) AS [result]\r\n",
 					""
 				],
 				"execution_count": null
