@@ -5,14 +5,11 @@
 		"workspaceName": {
 			"value": "synapse5hueysr"
 		},
-		"GitHub1_dushyant_credential": {
-			"value": ""
-		},
 		"synapse5hueysr-WorkspaceDefaultSqlServer_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapse5hueysr.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
-		"GitHub1_dushyant_properties_typeProperties_username": {
-			"value": "Dushyant-dataanalyst"
+		"HttpServer1_properties_typeProperties_url": {
+			"value": "https://github.com/Dushyant-dataanalyst/Azure-DE-Project-Case-Study?tab=readme-ov-file"
 		},
 		"synapse5hueysr-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://datalake5hueysr.dfs.core.windows.net"

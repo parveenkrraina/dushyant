@@ -7,18 +7,14 @@
 			"metadata": "Workspace name",
 			"defaultValue": "synapse5hueysr"
 		},
-		"GitHub1_dushyant_credential": {
-			"type": "secureString",
-			"metadata": "Secure string for 'credential' of 'GitHub1_dushyant'"
-		},
 		"synapse5hueysr-WorkspaceDefaultSqlServer_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'synapse5hueysr-WorkspaceDefaultSqlServer'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapse5hueysr.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
-		"GitHub1_dushyant_properties_typeProperties_username": {
+		"HttpServer1_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "Dushyant-dataanalyst"
+			"defaultValue": "https://github.com/Dushyant-dataanalyst/Azure-DE-Project-Case-Study?tab=readme-ov-file"
 		},
 		"synapse5hueysr-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"type": "string",
@@ -30,19 +26,157 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('workspaceName'), '/GitHub1_dushyant')]",
+			"name": "[concat(parameters('workspaceName'), '/CopyPipeline_q4o')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy_q4o",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [
+							{
+								"name": "Destination",
+								"value": "files//"
+							}
+						],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings",
+									"skipLineCount": 7
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings",
+									"copyBehavior": "PreserveHierarchy"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SourceDataset_q4o",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinationDataset_q4o",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/SourceDataset_q4o')]",
+				"[concat(variables('workspaceId'), '/datasets/DestinationDataset_q4o')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DestinationDataset_q4o')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "synapse5hueysr-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "files"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/synapse5hueysr-WorkspaceDefaultStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SourceDataset_q4o')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "HttpServer1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation"
+					},
+					"columnDelimiter": ",",
+					"rowDelimiter": "\n",
+					"escapeChar": "\\",
+					"firstRowAsHeader": false,
+					"quoteChar": null
+				},
+				"schema": [
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/HttpServer1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/HttpServer1')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"annotations": [],
-				"type": "GitHub",
+				"type": "HttpServer",
 				"typeProperties": {
-					"username": "[parameters('GitHub1_dushyant_properties_typeProperties_username')]",
-					"credential": {
-						"type": "SecureString",
-						"value": "[parameters('GitHub1_dushyant_credential')]"
-					},
-					"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIlNZTkFQU0VARjYxMThENTMtMTczMi00RDY3LTg2NjgtNjE2RTM3RDczNDI4XzYxM2U5NzdmLWU3ZjktNGUyNy1iZGEyLTczNTlmZmQ2YjAxYiINCn0="
+					"url": "[parameters('HttpServer1_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
 				},
 				"connectVia": {
 					"referenceName": "AutoResolveIntegrationRuntime",
