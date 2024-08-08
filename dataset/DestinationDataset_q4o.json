@@ -1,10 +1,6 @@
 {
 	"name": "DestinationDataset_q4o",
 	"properties": {
-		"linkedServiceName": {
-			"referenceName": "synapse5hueysr-WorkspaceDefaultStorage",
-			"type": "LinkedServiceReference"
-		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
