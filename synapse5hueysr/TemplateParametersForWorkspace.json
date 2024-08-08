@@ -11,6 +11,9 @@
 		"HttpServer1_properties_typeProperties_url": {
 			"value": "https://github.com/Dushyant-dataanalyst/Azure-DE-Project-Case-Study?tab=readme-ov-file"
 		},
+		"HttpServer2_properties_typeProperties_url": {
+			"value": "https://github.com/Dushyant-dataanalyst/Azure-DE-Project-Case-Study/tree/main/sales_data/poscsv"
+		},
 		"synapse5hueysr-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://datalake5hueysr.dfs.core.windows.net"
 		}
