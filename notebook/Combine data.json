@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "7bd3d43f-c3df-4e66-9275-b5f3b5784d3b"
+				"spark.autotune.trackingId": "25bfdf2d-7ed6-4efe-85fd-b7305077f72c"
 			}
 		},
 		"metadata": {
@@ -66,7 +66,7 @@
 					"csv_df = spark.read.csv(\"abfss://data@synapseworkspace.dfs.core.windows.net/sales_data/poscsv/*\", header=True, inferSchema=True)\r\n",
 					""
 				],
-				"execution_count": 4
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
