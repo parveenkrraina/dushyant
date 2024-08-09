@@ -12,13 +12,13 @@
 			"driverCores": 4,
 			"executorMemory": "28g",
 			"executorCores": 4,
-			"numExecutors": 10,
+			"numExecutors": 36,
 			"runAsWorkspaceSystemIdentity": false,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
-				"spark.dynamicAllocation.minExecutors": "10",
-				"spark.dynamicAllocation.maxExecutors": "10",
-				"spark.autotune.trackingId": "ef446e21-2b46-4a16-b183-79c7183a7b3f"
+				"spark.dynamicAllocation.minExecutors": "36",
+				"spark.dynamicAllocation.maxExecutors": "36",
+				"spark.autotune.trackingId": "0f9fa254-d979-4f42-8225-d64cbe2c5ec6"
 			}
 		},
 		"metadata": {
@@ -90,7 +90,7 @@
 					"\n",
 					"csv_df.count() "
 				],
-				"execution_count": 27
+				"execution_count": 12
 			},
 			{
 				"cell_type": "code",
@@ -248,7 +248,7 @@
 					"holiday_nodate.write.sqlanalytics(s\"$sql_pool_name.dbo.PublicHoliday\", Constants.INTERNAL)\r\n",
 					""
 				],
-				"execution_count": 26
+				"execution_count": null
 			}
 		]
 	}
