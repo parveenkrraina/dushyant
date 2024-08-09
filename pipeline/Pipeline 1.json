@@ -1,0 +1,73 @@
+{
+	"name": "Pipeline 1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Create table",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "dp203-exl-WorkspaceDefaultSqlServer",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DBName": "Sales_data_transformed"
+					}
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "IF OBJECT_ID('dbo.Sales_data', 'U') IS NOT NULL\n    DROP TABLE dbo.Sales_data;\n\nCREATE TABLE dbo.Sales_data\n(\n    sale_id VARCHAR(255) NULL,\n    product_id VARCHAR(255) NULL,\n    product_name VARCHAR(255) NULL,\n    quantity INT NULL,\n    price FLOAT NULL,\n    total_amount FLOAT NULL,\n    sale_date DATETIME NULL,\n    region VARCHAR(255) NULL\n)\nWITH\n(\n    DISTRIBUTION = ROUND_ROBIN\n);\n"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "Combine data",
+				"type": "SynapseNotebook",
+				"dependsOn": [
+					{
+						"activity": "Create table",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebook": {
+						"referenceName": "Combine data",
+						"type": "NotebookReference"
+					},
+					"snapshot": true,
+					"sparkPool": {
+						"referenceName": "dp203exl",
+						"type": "BigDataPoolReference"
+					},
+					"executorSize": "Small",
+					"conf": {
+						"spark.dynamicAllocation.enabled": false
+					},
+					"driverSize": "Small"
+				}
+			}
+		],
+		"annotations": []
+	}
+}

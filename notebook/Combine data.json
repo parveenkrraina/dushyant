@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "05bf2cd5-8845-44e4-a51a-e658dacad3e0"
+				"spark.autotune.trackingId": "564a9c06-fee5-4c95-8213-8672e0b7a8da"
 			}
 		},
 		"metadata": {
@@ -46,7 +46,7 @@
 				"memory": 28,
 				"automaticScaleJobs": false
 			},
-			"sessionKeepAliveTimeout": 7
+			"sessionKeepAliveTimeout": 30
 		},
 		"cells": [
 			{
@@ -90,7 +90,7 @@
 					"\n",
 					"csv_df.count() "
 				],
-				"execution_count": 11
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -109,7 +109,7 @@
 					"csv_df = csv_df.union(parquet_df)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 12
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -134,7 +134,7 @@
 					"print(csv_df.dtypes)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 13
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -165,7 +165,7 @@
 					"# Show the DataFrame and schema to verify changes\r\n",
 					"csv_df.printSchema()"
 				],
-				"execution_count": 14
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -185,47 +185,7 @@
 					"sales_df = csv_df.groupBy(\"region\",\"product_name\").agg({\"total_amount\": \"sum\"})\r\n",
 					"sales_df.show()"
 				],
-				"execution_count": 15
-			},
-			{
-				"cell_type": "markdown",
-				"metadata": {
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"# Define the table name\r\n",
-					"table_name = \"Sales_data\"\r\n",
-					"\r\n",
-					"# Drop the table if it exists\r\n",
-					"drop_table_sql = f\"DROP TABLE IF EXISTS {table_name}\"\r\n",
-					"spark.sql(drop_table_sql)\r\n",
-					"\r\n",
-					"# Create the table with appropriate schema\r\n",
-					"create_table_sql = f\"\"\"\r\n",
-					"CREATE TABLE {table_name}\r\n",
-					"(\r\n",
-					"    sale_id STRING,\r\n",
-					"    product_id STRING,\r\n",
-					"    product_name STRING,\r\n",
-					"    quantity INT,\r\n",
-					"    price DOUBLE,\r\n",
-					"    total_amount DOUBLE,\r\n",
-					"    sale_date TIMESTAMP,\r\n",
-					"    region STRING\r\n",
-					")\r\n",
-					"WITH\r\n",
-					"(\r\n",
-					"    DISTRIBUTION = ROUND_ROBIN,\r\n",
-					"    CLUSTERED COLUMNSTORE INDEX\r\n",
-					")\r\n",
-					"\"\"\"\r\n",
-					"spark.sql(create_table_sql)\r\n",
-					""
-				]
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -252,47 +212,18 @@
 					"    \"driver\": \"com.microsoft.sqlserver.jdbc.SQLServerDriver\"\r\n",
 					"}\r\n",
 					"\r\n",
-					"# Define the table name\r\n",
-					"table_name = \"Sales_data\"\r\n",
-					"\r\n",
-					"# Drop the table if it exists\r\n",
-					"drop_table_sql = f\"DROP TABLE IF EXISTS {table_name}\"\r\n",
-					"spark.sql(drop_table_sql)\r\n",
-					"\r\n",
-					"# Create the table with appropriate schema\r\n",
-					"create_table_sql = f\"\"\"\r\n",
-					"CREATE TABLE {table_name}\r\n",
-					"(\r\n",
-					"    sale_id STRING,\r\n",
-					"    product_id STRING,\r\n",
-					"    product_name STRING,\r\n",
-					"    quantity INT,\r\n",
-					"    price DOUBLE,\r\n",
-					"    total_amount DOUBLE,\r\n",
-					"    sale_date TIMESTAMP,\r\n",
-					"    region STRING\r\n",
-					")\r\n",
-					"WITH\r\n",
-					"(\r\n",
-					"    DISTRIBUTION = ROUND_ROBIN,\r\n",
-					"    CLUSTERED COLUMNSTORE INDEX\r\n",
-					")\r\n",
-					"\"\"\"\r\n",
-					"spark.sql(create_table_sql)\r\n",
-					"\r\n",
-					"\r\n",
 					"\r\n",
 					"# Write the DataFrame to the SQL Pool table\r\n",
 					"try:\r\n",
 					"    csv_df_limited.write \\\r\n",
-					"        .mode(\"append\") \\\r\n",
+					"        .mode(\"overwrite\") \\\r\n",
 					"        .jdbc(url=jdbc_url, table=\"Sales_data\", properties=jdbc_properties)\r\n",
 					"    print(\"DataFrame successfully written to Sales_d.\")\r\n",
 					"except Exception as e:\r\n",
 					"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 					""
 				],
-				"execution_count": 16
+				"execution_count": 7
 			}
 		]
 	}
