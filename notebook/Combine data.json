@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "564a9c06-fee5-4c95-8213-8672e0b7a8da"
+				"spark.autotune.trackingId": "00b6abb4-ccce-4a5a-86ba-6a829c8060f5"
 			}
 		},
 		"metadata": {
@@ -90,7 +90,7 @@
 					"\n",
 					"csv_df.count() "
 				],
-				"execution_count": 2
+				"execution_count": 28
 			},
 			{
 				"cell_type": "code",
@@ -109,7 +109,7 @@
 					"csv_df = csv_df.union(parquet_df)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 3
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -134,7 +134,7 @@
 					"print(csv_df.dtypes)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 4
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -165,7 +165,7 @@
 					"# Show the DataFrame and schema to verify changes\r\n",
 					"csv_df.printSchema()"
 				],
-				"execution_count": 5
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -185,7 +185,7 @@
 					"sales_df = csv_df.groupBy(\"region\",\"product_name\").agg({\"total_amount\": \"sum\"})\r\n",
 					"sales_df.show()"
 				],
-				"execution_count": 6
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -223,7 +223,7 @@
 					"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 					""
 				],
-				"execution_count": 7
+				"execution_count": null
 			}
 		]
 	}

@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 2",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP (1000) [sale_id]\n,[product_id]\n,[product_name]\n,[quantity]\n,[price]\n,[total_amount]\n,[sale_date]\n,[region]\n FROM [dbo].[Sales_data]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Sales_data_transformed",
+				"poolName": "Sales_data_transformed"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

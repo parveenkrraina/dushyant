@@ -25,7 +25,7 @@
 					"scripts": [
 						{
 							"type": "Query",
-							"text": "IF OBJECT_ID('dbo.Sales_data', 'U') IS NOT NULL\n    DROP TABLE dbo.Sales_data;\n\nCREATE TABLE dbo.Sales_data\n(\n    sale_id VARCHAR(255) NULL,\n    product_id VARCHAR(255) NULL,\n    product_name VARCHAR(255) NULL,\n    quantity INT NULL,\n    price FLOAT NULL,\n    total_amount FLOAT NULL,\n    sale_date DATETIME NULL,\n    region VARCHAR(255) NULL\n)\nWITH\n(\n    DISTRIBUTION = ROUND_ROBIN\n);\n"
+							"text": "IF OBJECT_ID('dbo.Sales_data', 'U') IS NOT NULL\n    DROP TABLE dbo.Sales_data;\n\n\nCREATE TABLE [dbo].[Sales_data]\n(\n    sale_id VARCHAR(255) NULL,\n    product_id VARCHAR(255) NULL,\n    product_name VARCHAR(255) NULL,\n    quantity INT NULL,\n    price FLOAT NULL,\n    total_amount FLOAT NULL,\n    sale_date DATETIME NULL,\n    region VARCHAR(255) NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH ([sale_date])\n)\n"
 						}
 					],
 					"scriptBlockExecutionTimeout": "02:00:00"
