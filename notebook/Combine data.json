@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "36",
 				"spark.dynamicAllocation.maxExecutors": "36",
-				"spark.autotune.trackingId": "0f9fa254-d979-4f42-8225-d64cbe2c5ec6"
+				"spark.autotune.trackingId": "0524903a-93a1-4831-ad65-4a0be9ef7ea3"
 			}
 		},
 		"metadata": {
@@ -239,14 +239,27 @@
 					}
 				},
 				"source": [
-					"// Write the dataframe into your sql pool\r\n",
-					"import org.apache.spark.sql.SqlAnalyticsConnector._\r\n",
-					"import com.microsoft.spark.sqlanalytics.utils.Constants\r\n",
+					"# Register the DataFrame as a temporary SQL table\r\n",
+					"csv_df.createOrReplaceTempView(\"temp_sales_data\")\r\n",
 					"\r\n",
-					"val sql_pool_name = \"fill in your sql pool name\" //fill in your sql pool name\r\n",
+					"# Define the SQL query to create the table in the dedicated SQL pool\r\n",
+					"create_table_query = \"\"\"\r\n",
+					"CREATE TABLE Sales_data_transformed.dbo.Sales_data\r\n",
+					"WITH\r\n",
+					"(\r\n",
+					"    DISTRIBUTION = ROUND_ROBIN,\r\n",
+					"    CLUSTERED COLUMNSTORE INDEX\r\n",
+					")\r\n",
+					"AS\r\n",
+					"SELECT * FROM temp_sales_data\r\n",
+					"\"\"\"\r\n",
 					"\r\n",
-					"holiday_nodate.write.sqlanalytics(s\"$sql_pool_name.dbo.PublicHoliday\", Constants.INTERNAL)\r\n",
-					""
+					"# Execute the query using Spark SQL\r\n",
+					"try:\r\n",
+					"    spark.sql(create_table_query)\r\n",
+					"    print(\"Table successfully created in the dedicated SQL pool.\")\r\n",
+					"except Exception as e:\r\n",
+					"    print(\"An error occurred while creating the table:\", str(e))"
 				],
 				"execution_count": null
 			}
