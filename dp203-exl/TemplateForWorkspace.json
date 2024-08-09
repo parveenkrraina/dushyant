@@ -373,7 +373,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "e1ea248a-222c-4e25-9f22-8950dd7d0686"
+						"spark.autotune.trackingId": "1eba3f5e-e36c-4d01-bac8-51507f1c80fa"
 					}
 				},
 				"metadata": {
@@ -398,7 +398,8 @@
 						"sparkVersion": "3.4",
 						"nodeCount": 3,
 						"cores": 4,
-						"memory": 28
+						"memory": 28,
+						"automaticScaleJobs": false
 					},
 					"sessionKeepAliveTimeout": 30
 				},
@@ -868,6 +869,30 @@
 			},
 			"dependsOn": [],
 			"location": "eastasia"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Dataset2')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dp203-exl-WorkspaceDefaultStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "Event_Hub_Data",
+						"fileSystem": "data"
+					}
+				},
+				"schema": {}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/dp203-exl-WorkspaceDefaultStorage')]"
+			]
 		}
 	]
 }
