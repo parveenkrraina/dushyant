@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "52ab380a-cc01-4407-9529-9a48f6485bfb"
+				"spark.autotune.trackingId": "956cf090-d429-4e71-a12b-1401713ae7b6"
 			}
 		},
 		"metadata": {
@@ -224,6 +224,114 @@
 					""
 				],
 				"execution_count": 41
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"json_df = spark.read.option(\"recursiveFileLookup\", \"true\").json(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/onlinetransaction/\")"
+				],
+				"execution_count": 43
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Display the schema\r\n",
+					"json_df.printSchema()\r\n",
+					"\r\n",
+					"# Show a sample of the data\r\n",
+					"json_df.show()"
+				],
+				"execution_count": 45
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Fill missing values\r\n",
+					"cleaned_df = json_df \\\r\n",
+					"    .fillna({\r\n",
+					"        \"price\": 0.0,\r\n",
+					"        \"quantity\": 0.0,\r\n",
+					"        \"total_amount\": 0.0,\r\n",
+					"        \"product_id\": \"unknown\",\r\n",
+					"        \"product_name\": \"unknown\",\r\n",
+					"        \"region\": \"unknown\",\r\n",
+					"        \"sale_date\": \"unknown\",\r\n",
+					"        \"sale_id\": \"unknown\"\r\n",
+					"    })\r\n",
+					"\r\n",
+					"# Alternatively, drop rows with missing values in specific columns\r\n",
+					"cleaned_df = json_df \\\r\n",
+					"    .dropna(subset=[\"price\", \"quantity\", \"total_amount\", \"product_id\", \"product_name\", \"region\", \"sale_date\", \"sale_id\"])\r\n",
+					"\r\n",
+					"# Optionally, you can use different strategies for different columns\r\n",
+					"# Example: Fill missing `sale_date` with a placeholder and drop rows with missing numeric columns\r\n",
+					"cleaned_df = json_df \\\r\n",
+					"    .fillna({\r\n",
+					"        \"product_id\": \"unknown\",\r\n",
+					"        \"product_name\": \"unknown\",\r\n",
+					"        \"region\": \"unknown\",\r\n",
+					"        \"sale_date\": \"unknown\",\r\n",
+					"        \"sale_id\": \"unknown\"\r\n",
+					"    }) \\\r\n",
+					"    .dropna(subset=[\"price\", \"quantity\", \"total_amount\"])\r\n",
+					"\r\n",
+					"# Show the cleaned DataFrame\r\n",
+					"cleaned_df.show()"
+				],
+				"execution_count": 46
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Save cleaned data to Azure Data Lake Gen 2 in Parquet format\r\n",
+					"cleaned_df.write.mode(\"overwrite\").parquet(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\")\r\n",
+					""
+				],
+				"execution_count": 47
 			}
 		]
 	}
