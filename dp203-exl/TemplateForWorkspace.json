@@ -163,12 +163,32 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 1')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT TOP (100) [sale_id]\n,[product_id]\n,[product_name]\n,[quantity]\n,[price]\n,[total_amount]\n,[sale_date]\n,[region]\n FROM [dbo].[Sales_data]",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "Sales_data_transformed",
+						"poolName": "Sales_data_transformed"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/ext_database')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "CREATE TABLE [dbo].[Sales_data]\n(\n    [sale_id] VARCHAR(255) NULL,\n    [product_id] VARCHAR(255) NULL,\n    [product_name] VARCHAR(255) NULL,\n    [quantity] INT NULL,\n    [price] FLOAT NULL,\n    [total_amount] FLOAT NULL,\n    [sale_date] DATETIME NULL,\n    [region] VARCHAR(255) NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH (sale_date),\n    CLUSTERED COLUMNSTORE INDEX\n)\nGO\n",
+					"query": "CREATE TABLE [dbo].[Sales_data]\n(\n    [sale_id] VARCHAR(255) NULL,\n    [product_id] VARCHAR(255) NULL,\n    [product_name] VARCHAR(255) NULL,\n    [quantity] INT NULL,\n    [price] FLOAT NULL,\n    [total_amount] FLOAT NULL,\n    [sale_date] DATETIME NULL,\n    [region] VARCHAR(255) NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH (sale_date)\n    \n)\nGO\n",
 					"metadata": {
 						"language": "sql"
 					},
@@ -204,7 +224,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "1e1cfc51-1098-4f02-929f-3aa89d7c15ed"
+						"spark.autotune.trackingId": "09fcdc4d-bb0f-40dd-9ac7-d12075e91572"
 					}
 				},
 				"metadata": {
@@ -277,7 +297,7 @@
 							"csv_df.count() "
 						],
 						"outputs": [],
-						"execution_count": 2
+						"execution_count": 5
 					},
 					{
 						"cell_type": "code",
@@ -297,7 +317,7 @@
 							"csv_df.count() "
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 6
 					},
 					{
 						"cell_type": "code",
@@ -319,11 +339,11 @@
 							"# Drop duplicates\r\n",
 							"csv_df = csv_df.dropDuplicates()\r\n",
 							"\r\n",
-							"print(df.dtypes)\r\n",
+							"print(csv_df.dtypes)\r\n",
 							"csv_df.count() "
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 8
 					},
 					{
 						"cell_type": "code",
@@ -355,7 +375,7 @@
 							"csv_df.printSchema()"
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 9
 					},
 					{
 						"cell_type": "code",
@@ -376,6 +396,52 @@
 							"sales_df.show()"
 						],
 						"outputs": [],
+						"execution_count": 10
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Define the table name\r\n",
+							"table_name = \"Sales_data\"\r\n",
+							"\r\n",
+							"# Drop the table if it exists\r\n",
+							"drop_table_sql = f\"DROP TABLE IF EXISTS {table_name}\"\r\n",
+							"spark.sql(drop_table_sql)\r\n",
+							"\r\n",
+							"# Create the table with appropriate schema\r\n",
+							"create_table_sql = f\"\"\"\r\n",
+							"CREATE TABLE {table_name}\r\n",
+							"(\r\n",
+							"    sale_id STRING,\r\n",
+							"    product_id STRING,\r\n",
+							"    product_name STRING,\r\n",
+							"    quantity INT,\r\n",
+							"    price DOUBLE,\r\n",
+							"    total_amount DOUBLE,\r\n",
+							"    sale_date TIMESTAMP,\r\n",
+							"    region STRING\r\n",
+							")\r\n",
+							"WITH\r\n",
+							"(\r\n",
+							"    DISTRIBUTION = ROUND_ROBIN,\r\n",
+							"    CLUSTERED COLUMNSTORE INDEX\r\n",
+							")\r\n",
+							"\"\"\"\r\n",
+							"spark.sql(create_table_sql)\r\n",
+							""
+						],
+						"outputs": [],
 						"execution_count": null
 					},
 					{
@@ -392,12 +458,27 @@
 							}
 						},
 						"source": [
-							"# Check the schema of your DataFrame\r\n",
-							"csv_df.printSchema()\r\n",
+							"# Define the JDBC URL and connection properties\r\n",
+							"jdbc_url = \"jdbc:sqlserver://dp203-exl.sql.azuresynapse.net:1433;database=Sales_data_transformed;user=sqladminuser123@dp203-exl;password=Dushyant@099;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.sql.azuresynapse.net;loginTimeout=30;\"\r\n",
+							"jdbc_properties = {\r\n",
+							"    \"user\": \"sqladminuser123\",\r\n",
+							"    \"password\": \"Dushyant@099\",\r\n",
+							"    \"driver\": \"com.microsoft.sqlserver.jdbc.SQLServerDriver\"\r\n",
+							"}\r\n",
+							"\r\n",
+							"\r\n",
+							"# Write the DataFrame to the SQL Pool table\r\n",
+							"try:\r\n",
+							"    csv_df.write \\\r\n",
+							"        .mode(\"overwrite\") \\\r\n",
+							"        .jdbc(url=jdbc_url, table=table_name, properties=jdbc_properties)\r\n",
+							"    print(\"DataFrame successfully written to Sales_data_transformed.dbo.Sales_data.\")\r\n",
+							"except Exception as e:\r\n",
+							"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 							""
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 24
 					},
 					{
 						"cell_type": "code",
@@ -436,7 +517,7 @@
 							"    print(\"An error occurred while creating the table:\", str(e))"
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 23
 					}
 				]
 			},
