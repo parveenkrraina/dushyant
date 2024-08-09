@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b7ed4517-de97-4940-b82c-4d0f04f8910c"
+				"spark.autotune.trackingId": "603d0ff4-0ede-49d2-b15c-8bada9f868e0"
 			}
 		},
 		"metadata": {
@@ -129,13 +129,15 @@
 				},
 				"source": [
 					"import pandas as pd\n",
+					"from pyspark.sql.functions import col, to_date\n",
+					"from pyspark.sql.types import IntegerType, DoubleType\n",
 					"\n",
 					"csv_df  = spark.read.option(\"recursiveFileLookup\",\"true\").csv(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/poscsv/*\",header=True)\n",
 					"\n",
 					"parquet_df = spark.read \\\n",
 					"    .option(\"recursiveFileLookup\", \"true\").parquet(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/posparquet/\")"
 				],
-				"execution_count": 156
+				"execution_count": 168
 			},
 			{
 				"cell_type": "code",
@@ -159,7 +161,7 @@
 					"\r\n",
 					"print(df.dtypes)"
 				],
-				"execution_count": 157
+				"execution_count": 169
 			},
 			{
 				"cell_type": "code",
@@ -175,53 +177,42 @@
 					}
 				},
 				"source": [
-					"#convert type\r\n",
-					"csv_df['quantity'] = csv_df['quantity'].astype(int)\r\n",
+					"# Convert 'quantity' column to IntegerType\r\n",
+					"csv_df = csv_df.withColumn(\"quantity\", col(\"quantity\").cast(IntegerType()))\r\n",
 					"\r\n",
-					"print(df.dtypes)\r\n",
+					"# Convert 'price' column to DoubleType\r\n",
+					"csv_df = csv_df.withColumn(\"price\", col(\"price\").cast(DoubleType()))\r\n",
 					"\r\n",
+					"# Convert 'total_amount' column to DoubleType\r\n",
+					"csv_df = csv_df.withColumn(\"total_amount\", col(\"total_amount\").cast(DoubleType()))\r\n",
+					"\r\n",
+					"# Convert 'sale_date' column to DateType\r\n",
+					"csv_df = csv_df.withColumn(\"sale_date\", to_date(col(\"sale_date\"), \"yyyy-MM-dd\"))\r\n",
+					"\r\n",
+					"# Show the DataFrame and schema to verify changes\r\n",
+					"csv_df.printSchema()"
+				],
+				"execution_count": 170
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Example transformation: Calculate total sales by region\r\n",
+					"sales_df = csv_df.groupBy(\"region\").agg({\"total_amount\": \"sum\"})\r\n",
 					""
 				],
-				"execution_count": 160
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"\r\n",
-					"csv_df['price'] = pd.to_numeric(csv_df['price'], errors='coerce')\r\n",
-					"\r\n",
-					""
-				],
-				"execution_count": null
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"csv_df['total_amount'] = pd.to_numeric(csv_df['total_amount'], errors='coerce')"
-				],
-				"execution_count": null
+				"execution_count": 172
 			}
 		]
 	}
