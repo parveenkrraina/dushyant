@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "4daee3d8-9f98-4571-9a08-7ad49f16d609"
+				"spark.autotune.trackingId": "e1ea248a-222c-4e25-9f22-8950dd7d0686"
 			}
 		},
 		"metadata": {
@@ -90,7 +90,7 @@
 					"\n",
 					"csv_df.count() "
 				],
-				"execution_count": 36
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
@@ -109,7 +109,7 @@
 					"csv_df = csv_df.union(parquet_df)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 37
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -134,7 +134,7 @@
 					"print(csv_df.dtypes)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 38
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -165,7 +165,7 @@
 					"# Show the DataFrame and schema to verify changes\r\n",
 					"csv_df.printSchema()"
 				],
-				"execution_count": 39
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -185,7 +185,7 @@
 					"sales_df = csv_df.groupBy(\"region\",\"product_name\").agg({\"total_amount\": \"sum\"})\r\n",
 					"sales_df.show()"
 				],
-				"execution_count": 40
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -220,7 +220,7 @@
 					"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 					""
 				],
-				"execution_count": 41
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -238,7 +238,7 @@
 				"source": [
 					"json_df = spark.read.option(\"recursiveFileLookup\", \"true\").json(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/onlinetransaction/\")"
 				],
-				"execution_count": 43
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
@@ -260,7 +260,7 @@
 					"# Show a sample of the data\r\n",
 					"json_df.show()"
 				],
-				"execution_count": 45
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -308,7 +308,7 @@
 					"# Show the cleaned DataFrame\r\n",
 					"cleaned_df.show()"
 				],
-				"execution_count": 46
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -328,7 +328,7 @@
 					"cleaned_df.write.mode(\"overwrite\").json(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\")\r\n",
 					""
 				],
-				"execution_count": 47
+				"execution_count": 4
 			}
 		]
 	}
