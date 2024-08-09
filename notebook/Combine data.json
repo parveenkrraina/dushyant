@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "10",
 				"spark.dynamicAllocation.maxExecutors": "10",
-				"spark.autotune.trackingId": "7822dfbe-5bdd-4ec3-96de-15fbf3625f17"
+				"spark.autotune.trackingId": "ef446e21-2b46-4a16-b183-79c7183a7b3f"
 			}
 		},
 		"metadata": {
@@ -90,7 +90,7 @@
 					"\n",
 					"csv_df.count() "
 				],
-				"execution_count": 1
+				"execution_count": 27
 			},
 			{
 				"cell_type": "code",
@@ -224,6 +224,31 @@
 					"csv_df = spark.createDataFrame(data, schema=columns)"
 				],
 				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"// Write the dataframe into your sql pool\r\n",
+					"import org.apache.spark.sql.SqlAnalyticsConnector._\r\n",
+					"import com.microsoft.spark.sqlanalytics.utils.Constants\r\n",
+					"\r\n",
+					"val sql_pool_name = \"fill in your sql pool name\" //fill in your sql pool name\r\n",
+					"\r\n",
+					"holiday_nodate.write.sqlanalytics(s\"$sql_pool_name.dbo.PublicHoliday\", Constants.INTERNAL)\r\n",
+					""
+				],
+				"execution_count": 26
 			}
 		]
 	}
