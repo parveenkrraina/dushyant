@@ -1,0 +1,18 @@
+{
+	"name": "Dataset1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dp203-exl-WorkspaceDefaultSqlServer",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"DBName": "Sales_data_transformed"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": [],
+		"typeProperties": {
+			"tableName": "dbo.Sales_d"
+		}
+	}
+}

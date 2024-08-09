@@ -2,7 +2,7 @@
 	"name": "ext_database",
 	"properties": {
 		"content": {
-			"query": "CREATE TABLE [dbo].[Sales_data]\n(\n    [sale_id] VARCHAR(255) NULL,\n    [product_id] VARCHAR(255) NULL,\n    [product_name] VARCHAR(255) NULL,\n    [quantity] INT NULL,\n    [price] FLOAT NULL,\n    [total_amount] FLOAT NULL,\n    [sale_date] DATETIME NULL,\n    [region] VARCHAR(255) NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH ([sale_date])\n)\nGO\n",
+			"query": "DROP TABLE [dbo].[Sales_data]\nGO\n\n\nCREATE TABLE [dbo].[Sales_data]\n(\n    [sale_id] VARCHAR(255) NULL,\n    [product_id] VARCHAR(255) NULL,\n    [product_name] VARCHAR(255) NULL,\n    [quantity] INT NULL,\n    [price] FLOAT NULL,\n    [total_amount] FLOAT NULL,\n    [sale_date] DATETIME2  NULL,\n    [region] VARCHAR(255) NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH ([sale_date])\n)\nGO\n",
 			"metadata": {
 				"language": "sql"
 			},
