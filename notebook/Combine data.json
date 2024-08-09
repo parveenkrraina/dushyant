@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "5e5d5273-a777-415b-8146-0b8ee2d6abc5"
+				"spark.autotune.trackingId": "05bf2cd5-8845-44e4-a51a-e658dacad3e0"
 			}
 		},
 		"metadata": {
@@ -90,7 +90,7 @@
 					"\n",
 					"csv_df.count() "
 				],
-				"execution_count": 53
+				"execution_count": 11
 			},
 			{
 				"cell_type": "code",
@@ -109,7 +109,7 @@
 					"csv_df = csv_df.union(parquet_df)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 54
+				"execution_count": 12
 			},
 			{
 				"cell_type": "code",
@@ -134,7 +134,7 @@
 					"print(csv_df.dtypes)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 55
+				"execution_count": 13
 			},
 			{
 				"cell_type": "code",
@@ -165,7 +165,7 @@
 					"# Show the DataFrame and schema to verify changes\r\n",
 					"csv_df.printSchema()"
 				],
-				"execution_count": 56
+				"execution_count": 14
 			},
 			{
 				"cell_type": "code",
@@ -185,7 +185,7 @@
 					"sales_df = csv_df.groupBy(\"region\",\"product_name\").agg({\"total_amount\": \"sum\"})\r\n",
 					"sales_df.show()"
 				],
-				"execution_count": 57
+				"execution_count": 15
 			},
 			{
 				"cell_type": "markdown",
@@ -241,6 +241,9 @@
 					}
 				},
 				"source": [
+					"# Limit the DataFrame to 100 rows\r\n",
+					"csv_df_limited = csv_df.limit(100)\r\n",
+					"\r\n",
 					"# Define the JDBC URL and connection properties\r\n",
 					"jdbc_url = \"jdbc:sqlserver://dp203-exl.sql.azuresynapse.net:1433;database=Sales_data_transformed;user=sqladminuser123@dp203-exl;password=Dushyant@099;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.sql.azuresynapse.net;loginTimeout=30;\"\r\n",
 					"jdbc_properties = {\r\n",
@@ -249,9 +252,39 @@
 					"    \"driver\": \"com.microsoft.sqlserver.jdbc.SQLServerDriver\"\r\n",
 					"}\r\n",
 					"\r\n",
+					"# Define the table name\r\n",
+					"table_name = \"Sales_data\"\r\n",
+					"\r\n",
+					"# Drop the table if it exists\r\n",
+					"drop_table_sql = f\"DROP TABLE IF EXISTS {table_name}\"\r\n",
+					"spark.sql(drop_table_sql)\r\n",
+					"\r\n",
+					"# Create the table with appropriate schema\r\n",
+					"create_table_sql = f\"\"\"\r\n",
+					"CREATE TABLE {table_name}\r\n",
+					"(\r\n",
+					"    sale_id STRING,\r\n",
+					"    product_id STRING,\r\n",
+					"    product_name STRING,\r\n",
+					"    quantity INT,\r\n",
+					"    price DOUBLE,\r\n",
+					"    total_amount DOUBLE,\r\n",
+					"    sale_date TIMESTAMP,\r\n",
+					"    region STRING\r\n",
+					")\r\n",
+					"WITH\r\n",
+					"(\r\n",
+					"    DISTRIBUTION = ROUND_ROBIN,\r\n",
+					"    CLUSTERED COLUMNSTORE INDEX\r\n",
+					")\r\n",
+					"\"\"\"\r\n",
+					"spark.sql(create_table_sql)\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
 					"# Write the DataFrame to the SQL Pool table\r\n",
 					"try:\r\n",
-					"    csv_df.write \\\r\n",
+					"    csv_df_limited.write \\\r\n",
 					"        .mode(\"append\") \\\r\n",
 					"        .jdbc(url=jdbc_url, table=\"Sales_data\", properties=jdbc_properties)\r\n",
 					"    print(\"DataFrame successfully written to Sales_d.\")\r\n",
@@ -259,7 +292,7 @@
 					"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 					""
 				],
-				"execution_count": 58
+				"execution_count": 16
 			}
 		]
 	}
