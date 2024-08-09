@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "634353ef-021c-4487-b30e-6ce9d5371812"
+				"spark.autotune.trackingId": "52ab380a-cc01-4407-9529-9a48f6485bfb"
 			}
 		},
 		"metadata": {
@@ -218,7 +218,7 @@
 					"    csv_df_limited.write \\\r\n",
 					"        .mode(\"append\") \\\r\n",
 					"        .jdbc(url=jdbc_url, table=\"Sales_data\", properties=jdbc_properties)\r\n",
-					"    print(\"DataFrame successfully written to Sales_d.\")\r\n",
+					"    print(\"DataFrame successfully written to Sales_data\")\r\n",
 					"except Exception as e:\r\n",
 					"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 					""
