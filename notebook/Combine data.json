@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "fe88c101-9e9b-466e-acae-cc0fae8aa11c"
+				"spark.autotune.trackingId": "69db6d0a-7b7e-445a-b128-47d3d34e75df"
 			}
 		},
 		"metadata": {
@@ -201,9 +201,6 @@
 					}
 				},
 				"source": [
-					"# Limit the DataFrame to 100 rows\r\n",
-					"csv_df_limited = csv_df.limit(100)\r\n",
-					"\r\n",
 					"# Define the JDBC URL and connection properties\r\n",
 					"jdbc_url = \"jdbc:sqlserver://dp203-exl.sql.azuresynapse.net:1433;database=Sales_data_transformed;user=sqladminuser123@dp203-exl;password=Dushyant@099;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.sql.azuresynapse.net;loginTimeout=30;\"\r\n",
 					"jdbc_properties = {\r\n",
@@ -215,7 +212,7 @@
 					"\r\n",
 					"# Write the DataFrame to the SQL Pool table\r\n",
 					"try:\r\n",
-					"    csv_df_limited.write \\\r\n",
+					"    csv_df.write \\\r\n",
 					"        .mode(\"append\") \\\r\n",
 					"        .jdbc(url=jdbc_url, table=\"Sales_data\", properties=jdbc_properties)\r\n",
 					"    print(\"DataFrame successfully written to Sales_data\")\r\n",
