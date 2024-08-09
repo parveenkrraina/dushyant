@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "69db6d0a-7b7e-445a-b128-47d3d34e75df"
+				"spark.autotune.trackingId": "4daee3d8-9f98-4571-9a08-7ad49f16d609"
 			}
 		},
 		"metadata": {
@@ -325,7 +325,7 @@
 				},
 				"source": [
 					"# Save cleaned data to Azure Data Lake Gen 2 in Parquet format\r\n",
-					"cleaned_df.write.mode(\"overwrite\").parquet(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\")\r\n",
+					"cleaned_df.write.mode(\"overwrite\").json(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\")\r\n",
 					""
 				],
 				"execution_count": 47
