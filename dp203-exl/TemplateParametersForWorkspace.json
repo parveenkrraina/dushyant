@@ -5,11 +5,17 @@
 		"workspaceName": {
 			"value": "dp203-exl"
 		},
+		"AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
 		"dp203-exl-WorkspaceDefaultSqlServer_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:dp203-exl.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
 		"synapse5hueysr-WorkspaceDefaultSqlServer_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapse5hueysr.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://dp203dushyantdatalake.dfs.core.windows.net/"
 		},
 		"dp203-exl-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://dp203dushyantdatalake.dfs.core.windows.net"

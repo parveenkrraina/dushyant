@@ -7,6 +7,10 @@
 			"metadata": "Workspace name",
 			"defaultValue": "dp203-exl"
 		},
+		"AzureDataLakeStorage1_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
+		},
 		"dp203-exl-WorkspaceDefaultSqlServer_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'dp203-exl-WorkspaceDefaultSqlServer'",
@@ -16,6 +20,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'synapse5hueysr-WorkspaceDefaultSqlServer'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapse5hueysr.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://dp203dushyantdatalake.dfs.core.windows.net/"
 		},
 		"dp203-exl-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"type": "string",
@@ -34,6 +42,29 @@
 				"annotations": []
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AzureDataLakeStorage1')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/dp203-exl-WorkspaceDefaultSqlServer')]",
@@ -137,13 +168,13 @@
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
 				"content": {
-					"query": "create TABLE salescsv (\n    sale_id NVARCHAR(100),\n    product_id NVARCHAR(100),\n    product_name NVARCHAR(100),\n    quality int,\n    price float,\n    total_amount float, \n    sales_date DATE,\n    region NVARCHAR(100)\n\n)\n\n-- This is auto-generated code\nInsert into salesdatacsv(sale_id,product_id ,\n    product_name,\n    quality ,\n    price ,\n    total_amount , \n    sales_date ,\n    region)\nSELECT *\nFROM\n    OPENROWSET(\n        BULK 'https://datalake5hueysr.dfs.core.windows.net/files/sales_data/poscsv/**',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        HEADER_ROW = True\n    ) AS [result]\n",
+					"query": "SELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://dp203dushyantdatalake.dfs.core.windows.net/data/sales_data/poscsv/**',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0',\n        HEADER_ROW = TRUE\n    ) AS [result]\n",
 					"metadata": {
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "sql5hueysr",
-						"poolName": "sql5hueysr"
+						"databaseName": "master",
+						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
 				},
@@ -192,6 +223,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 2')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "-- This is auto-generated code\nSELECT\n    TOP 100 *\nFROM\n    OPENROWSET(\n        BULK 'https://dp203dushyantdatalake.dfs.core.windows.net/data/sales_data/poscsv/**',\n        FORMAT = 'CSV',\n        PARSER_VERSION = '2.0'\n    ) AS [result]\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Combine data')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
@@ -212,7 +263,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "89168bd2-30ea-42c4-be56-acc435e642f6"
+						"spark.autotune.trackingId": "6ddba1f8-89c4-4502-a82d-e9d651ab710f"
 					}
 				},
 				"metadata": {
@@ -237,12 +288,24 @@
 						"sparkVersion": "3.4",
 						"nodeCount": 10,
 						"cores": 4,
-						"memory": 28,
-						"automaticScaleJobs": false
+						"memory": 28
 					},
 					"sessionKeepAliveTimeout": 30
 				},
 				"cells": [
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"## **Read input file **"
+						]
+					},
 					{
 						"cell_type": "code",
 						"metadata": {
@@ -256,17 +319,23 @@
 								}
 							},
 							"microsoft": {
-								"language": "python"
-							},
-							"collapsed": false
+								"language": "sparksql"
+							}
 						},
 						"source": [
-							"%%pyspark\r\n",
-							"df = spark.read.load('abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/poscsv/**/*.csv',format='csv',header=True)\r\n",
-							"display(df.limit(10))"
+							"%%sql\r\n",
+							"\r\n",
+							"SELECT *\r\n",
+							"FROM\r\n",
+							"    OPENROWSET(\r\n",
+							"        BULK 'https://dp203dushyantdatalake.dfs.core.windows.net/data/sales_data/poscsv/**',\r\n",
+							"        FORMAT = 'CSV',\r\n",
+							"        PARSER_VERSION = '2.0',\r\n",
+							"        HEADER_ROW = TRUE\r\n",
+							"    ) AS result"
 						],
 						"outputs": [],
-						"execution_count": 26
+						"execution_count": 30
 					},
 					{
 						"cell_type": "code",
@@ -282,37 +351,21 @@
 							}
 						},
 						"source": [
-							"# Read Parquet data\r\n",
-							"parquet_df = spark.read.parquet(\"https://dp203dushyantdatalake.dfs.core.windows.net/data/sales_data/posparquet\"\r\n",
-							"posparquet\")"
+							"# Define the path to the CSV files in ADLS\r\n",
+							"csv_path = \"abfss://dp203dushyantdatalake.dfs.core.windows.net/data/sales_data/poscsv/\"\r\n",
+							"\r\n",
+							"# Load the CSV files into a DataFrame\r\n",
+							"df = spark.read.format(\"csv\") \\\r\n",
+							"    .option(\"header\", \"true\") \\\r\n",
+							"    .option(\"inferSchema\", \"true\") \\\r\n",
+							"    .load(csv_path)\r\n",
+							"\r\n",
+							"# Show the first few rows of the DataFrame\r\n",
+							"df.show(100)\r\n",
+							""
 						],
 						"outputs": [],
-						"execution_count": null
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							},
-							"microsoft": {
-								"language": "python"
-							},
-							"collapsed": false
-						},
-						"source": [
-							"%%pyspark\r\n",
-							"df = spark.read.load('abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/posparquet/2021/Q1/February/sales_data_2021_Q1_February.parquet', format='parquet')\r\n",
-							"display(df.limit(10))"
-						],
-						"outputs": [],
-						"execution_count": 27
+						"execution_count": 31
 					}
 				]
 			},
@@ -325,7 +378,7 @@
 			"properties": {
 				"autoPause": {
 					"enabled": true,
-					"delayInMinutes": 15
+					"delayInMinutes": 7
 				},
 				"autoScale": {
 					"enabled": true,
