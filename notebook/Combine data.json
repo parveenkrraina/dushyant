@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "2d80998c-93a8-4010-8745-eb685e1bac1f"
+				"spark.autotune.trackingId": "46176a0a-c296-4bb0-8b2c-b12e369a73a8"
 			}
 		},
 		"metadata": {
@@ -90,7 +90,7 @@
 					"\n",
 					"csv_df.count() "
 				],
-				"execution_count": 2
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -109,7 +109,7 @@
 					"csv_df = csv_df.union(parquet_df)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": null
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -131,10 +131,10 @@
 					"# Drop duplicates\r\n",
 					"csv_df = csv_df.dropDuplicates()\r\n",
 					"\r\n",
-					"print(df.dtypes)\r\n",
+					"print(csv_df.dtypes)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": null
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
