@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "36ea8f11-7bce-47ea-8fa2-7cdbb8eee8f6"
+				"spark.autotune.trackingId": "968e607f-80e1-41dd-aec6-b6905009c1c8"
 			}
 		},
 		"metadata": {
@@ -76,33 +76,28 @@
 				},
 				"source": [
 					"from pyspark.sql import SparkSession\r\n",
-					"from pyspark.sql.types import *"
-				],
-				"execution_count": 41
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					},
-					"microsoft": {
-						"language": "sparksql"
-					}
-				},
-				"source": [
-					"%%sql\r\n",
+					"from pyspark.sql.types import *\r\n",
 					"\r\n",
-					"SELECT *\r\n",
-					"FROM dbo.csvsalesf"
+					"schema = StructType([\r\n",
+					"    StructField(\"sale_id\", StringType(), True),\r\n",
+					"    StructField(\"product_id\", StringType(), True),\r\n",
+					"    StructField(\"product_name\", StringType(), True),\r\n",
+					"    StructField(\"quantity\", StringType(), True),\r\n",
+					"    StructField(\"price\", StringType(), True),\r\n",
+					"    StructField(\"total_amount\", StringType(), True),\r\n",
+					"    StructField(\"sale_date\", StringType(), True),\r\n",
+					"    StructField(\"region\", StringType(), True),\r\n",
+					"    # Add more fields based on your CSV structure\r\n",
+					"])\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"df = spark.read.option('header','true')\\\r\n",
+					"                .option('delimiter', ',')\\\r\n",
+					"                .schema(schema)\\\r\n",
+					"                .csv('abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/poscsv/*')"
 				],
-				"execution_count": 39
+				"execution_count": 52
 			},
 			{
 				"cell_type": "code",
@@ -118,20 +113,10 @@
 					}
 				},
 				"source": [
-					"# Define the path to the CSV files in ADLS\r\n",
-					"csv_path = \"abfss://dp203dushyantdatalake.dfs.core.windows.net/data/sales_data/poscsv/\"\r\n",
-					"\r\n",
-					"# Load the CSV files into a DataFrame\r\n",
-					"df = spark.read.format(\"csv\") \\\r\n",
-					"    .option(\"header\", \"true\") \\\r\n",
-					"    .option(\"inferSchema\", \"true\") \\\r\n",
-					"    .load(csv_path)\r\n",
-					"\r\n",
 					"# Show the first few rows of the DataFrame\r\n",
-					"df.show(100)\r\n",
-					""
+					"df.show(100)"
 				],
-				"execution_count": null
+				"execution_count": 53
 			}
 		]
 	}

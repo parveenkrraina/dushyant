@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 3",
+	"properties": {
+		"content": {
+			"query": "SELECT TOP (100) [sale_id]\n,[product_id]\n,[product_name]\n,[quantity]\n,[price]\n,[total_amount]\n,[sale_date]\n,[region]\n FROM [dbo].[csvsales]",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Sales_data_db",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
