@@ -1,0 +1,19 @@
+{
+	"name": "Dataset2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dp203-exl-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "Event_Hub_Data",
+				"fileSystem": "data"
+			}
+		},
+		"schema": {}
+	}
+}
