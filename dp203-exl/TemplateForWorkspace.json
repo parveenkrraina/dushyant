@@ -27,6 +27,89 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('workspaceName'), '/Pipeline 1')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Create table",
+						"type": "Script",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "dp203-exl-WorkspaceDefaultSqlServer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"DBName": "Sales_data_transformed"
+							}
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": "IF OBJECT_ID('dbo.Sales_data', 'U') IS NOT NULL\n    DROP TABLE dbo.Sales_data;\n\n\nCREATE TABLE [dbo].[Sales_data]\n(\n    sale_id VARCHAR(255) NULL,\n    product_id VARCHAR(255) NULL,\n    product_name VARCHAR(255) NULL,\n    quantity INT NULL,\n    price FLOAT NULL,\n    total_amount FLOAT NULL,\n    sale_date DATETIME NULL,\n    region VARCHAR(255) NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH ([sale_date])\n)\n"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					},
+					{
+						"name": "Combine data",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "Create table",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "Combine data",
+								"type": "NotebookReference"
+							},
+							"snapshot": true,
+							"sparkPool": {
+								"referenceName": "dp203exl",
+								"type": "BigDataPoolReference"
+							},
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": false
+							},
+							"driverSize": "Small"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/dp203-exl-WorkspaceDefaultSqlServer')]",
+				"[concat(variables('workspaceId'), '/notebooks/Combine data')]",
+				"[concat(variables('workspaceId'), '/bigDataPools/dp203exl')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Dataset')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -229,6 +312,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 2')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT TOP (1000) [sale_id]\n,[product_id]\n,[product_name]\n,[quantity]\n,[price]\n,[total_amount]\n,[sale_date]\n,[region]\n FROM [dbo].[Sales_data]",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "Sales_data_transformed",
+						"poolName": "Sales_data_transformed"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/ext_database')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -270,7 +373,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "e3bd8781-72a7-4e70-bc9d-ff5f9a27c3c2"
+						"spark.autotune.trackingId": "6599b484-8b15-4b19-a3f1-7baf530eb597"
 					}
 				},
 				"metadata": {
@@ -482,6 +585,118 @@
 						],
 						"outputs": [],
 						"execution_count": 41
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"json_df = spark.read.option(\"recursiveFileLookup\", \"true\").json(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/onlinetransaction/\")"
+						],
+						"outputs": [],
+						"execution_count": 43
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Display the schema\r\n",
+							"json_df.printSchema()\r\n",
+							"\r\n",
+							"# Show a sample of the data\r\n",
+							"json_df.show()"
+						],
+						"outputs": [],
+						"execution_count": 45
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Fill missing values\r\n",
+							"cleaned_df = json_df \\\r\n",
+							"    .fillna({\r\n",
+							"        \"price\": 0.0,\r\n",
+							"        \"quantity\": 0.0,\r\n",
+							"        \"total_amount\": 0.0,\r\n",
+							"        \"product_id\": \"unknown\",\r\n",
+							"        \"product_name\": \"unknown\",\r\n",
+							"        \"region\": \"unknown\",\r\n",
+							"        \"sale_date\": \"unknown\",\r\n",
+							"        \"sale_id\": \"unknown\"\r\n",
+							"    })\r\n",
+							"\r\n",
+							"# Alternatively, drop rows with missing values in specific columns\r\n",
+							"cleaned_df = json_df \\\r\n",
+							"    .dropna(subset=[\"price\", \"quantity\", \"total_amount\", \"product_id\", \"product_name\", \"region\", \"sale_date\", \"sale_id\"])\r\n",
+							"\r\n",
+							"# Optionally, you can use different strategies for different columns\r\n",
+							"# Example: Fill missing `sale_date` with a placeholder and drop rows with missing numeric columns\r\n",
+							"cleaned_df = json_df \\\r\n",
+							"    .fillna({\r\n",
+							"        \"product_id\": \"unknown\",\r\n",
+							"        \"product_name\": \"unknown\",\r\n",
+							"        \"region\": \"unknown\",\r\n",
+							"        \"sale_date\": \"unknown\",\r\n",
+							"        \"sale_id\": \"unknown\"\r\n",
+							"    }) \\\r\n",
+							"    .dropna(subset=[\"price\", \"quantity\", \"total_amount\"])\r\n",
+							"\r\n",
+							"# Show the cleaned DataFrame\r\n",
+							"cleaned_df.show()"
+						],
+						"outputs": [],
+						"execution_count": 46
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Save cleaned data to Azure Data Lake Gen 2 in Parquet format\r\n",
+							"cleaned_df.write.mode(\"overwrite\").parquet(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\")\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 47
 					}
 				]
 			},
@@ -523,109 +738,6 @@
 			},
 			"dependsOn": [],
 			"location": "eastasia"
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 2')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "SELECT TOP (1000) [sale_id]\n,[product_id]\n,[product_name]\n,[quantity]\n,[price]\n,[total_amount]\n,[sale_date]\n,[region]\n FROM [dbo].[Sales_data]",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "Sales_data_transformed",
-						"poolName": "Sales_data_transformed"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/Pipeline 1')]",
-			"type": "Microsoft.Synapse/workspaces/pipelines",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"activities": [
-					{
-						"name": "Create table",
-						"type": "Script",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"linkedServiceName": {
-							"referenceName": "dp203-exl-WorkspaceDefaultSqlServer",
-							"type": "LinkedServiceReference",
-							"parameters": {
-								"DBName": "Sales_data_transformed"
-							}
-						},
-						"typeProperties": {
-							"scripts": [
-								{
-									"type": "Query",
-									"text": "IF OBJECT_ID('dbo.Sales_data', 'U') IS NOT NULL\n    DROP TABLE dbo.Sales_data;\n\n\nCREATE TABLE [dbo].[Sales_data]\n(\n    sale_id VARCHAR(255) NULL,\n    product_id VARCHAR(255) NULL,\n    product_name VARCHAR(255) NULL,\n    quantity INT NULL,\n    price FLOAT NULL,\n    total_amount FLOAT NULL,\n    sale_date DATETIME NULL,\n    region VARCHAR(255) NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH ([sale_date])\n)\n"
-								}
-							],
-							"scriptBlockExecutionTimeout": "02:00:00"
-						}
-					},
-					{
-						"name": "Combine data",
-						"type": "SynapseNotebook",
-						"dependsOn": [
-							{
-								"activity": "Create table",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebook": {
-								"referenceName": "Combine data",
-								"type": "NotebookReference"
-							},
-							"snapshot": true,
-							"sparkPool": {
-								"referenceName": "dp203exl",
-								"type": "BigDataPoolReference"
-							},
-							"executorSize": "Small",
-							"conf": {
-								"spark.dynamicAllocation.enabled": false
-							},
-							"driverSize": "Small"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/dp203-exl-WorkspaceDefaultSqlServer')]",
-				"[concat(variables('workspaceId'), '/notebooks/Combine data')]",
-				"[concat(variables('workspaceId'), '/bigDataPools/dp203exl')]"
-			]
 		}
 	]
 }
