@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "dacb0480-3850-4315-825a-3725eca15f5f"
+				"spark.autotune.trackingId": "2021a38d-b8f6-460c-8e6e-bf5eaeaffc47"
 			}
 		},
 		"metadata": {
@@ -86,7 +86,7 @@
 					"\n",
 					"csv_df.count() "
 				],
-				"execution_count": 188
+				"execution_count": 199
 			},
 			{
 				"cell_type": "code",
@@ -105,7 +105,7 @@
 					"csv_df = csv_df.union(parquet_df)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 189
+				"execution_count": 200
 			},
 			{
 				"cell_type": "code",
@@ -130,7 +130,7 @@
 					"print(df.dtypes)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 190
+				"execution_count": 201
 			},
 			{
 				"cell_type": "code",
@@ -161,7 +161,7 @@
 					"# Show the DataFrame and schema to verify changes\r\n",
 					"csv_df.printSchema()"
 				],
-				"execution_count": 194
+				"execution_count": 202
 			},
 			{
 				"cell_type": "code",
@@ -181,7 +181,7 @@
 					"sales_df = csv_df.groupBy(\"region\").agg({\"total_amount\": \"sum\"})\r\n",
 					"sales_df.show()"
 				],
-				"execution_count": 192
+				"execution_count": 203
 			},
 			{
 				"cell_type": "code",
@@ -197,17 +197,25 @@
 					}
 				},
 				"source": [
-					"# Define the output path in your Azure Data Lake\r\n",
-					"output_path = 'abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/processed_sales_data/'\r\n",
+					"# Define the JDBC URL and connection properties\r\n",
+					"jdbc_url = \"jdbc:sqlserver://dp203-exl.sql.azuresynapse.net:1433;database=Sales_data_transformed;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;\"\r\n",
+					"jdbc_properties = {\r\n",
+					"    \"user\": \"sqladminuser123\",  # Replace with your Synapse SQL pool username\r\n",
+					"    \"password\": \"Dushyant@099\",  # Replace with your Synapse SQL pool password\r\n",
+					"    \"driver\": \"com.microsoft.sqlserver.jdbc.SQLServerDriver\"\r\n",
+					"}\r\n",
 					"\r\n",
-					"# Write the DataFrame to a CSV file in the specified path\r\n",
-					"csv_df.write.mode(\"overwrite\").option(\"header\", \"true\").csv(output_path)\r\n",
+					"# Define the table name where you want to write the data\r\n",
+					"table_name = \"Sales_data_transformed.dbo.Sales_data\"\r\n",
 					"\r\n",
+					"# Write the DataFrame to the Azure Synapse SQL pool table\r\n",
+					"csv_df.write \\\r\n",
+					"    .jdbc(url=jdbc_url, table=table_name, mode=\"overwrite\", properties=jdbc_properties)\r\n",
 					"\r\n",
-					"print(\"DataFrame saved successfully to Azure Data Lake at:\", output_path)\r\n",
+					"print(\"DataFrame successfully written to Sales_data_transformed.dbo.Sales_data.\")\r\n",
 					""
 				],
-				"execution_count": 193
+				"execution_count": 205
 			}
 		]
 	}
