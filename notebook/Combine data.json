@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "603d0ff4-0ede-49d2-b15c-8bada9f868e0"
+				"spark.autotune.trackingId": "a308c9f2-f766-45f1-9e65-dad657972dd6"
 			}
 		},
 		"metadata": {
@@ -49,59 +49,6 @@
 		},
 		"cells": [
 			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"from py4j.java_gateway import java_import\r\n",
-					"\r\n",
-					"# Import Hadoop FileSystem classes\r\n",
-					"java_import(spark._jvm, 'org.apache.hadoop.fs.FileSystem')\r\n",
-					"java_import(spark._jvm, 'org.apache.hadoop.fs.Path')\r\n",
-					"\r\n",
-					"# Get the Hadoop FileSystem instance\r\n",
-					"hadoop_conf = spark._jsc.hadoopConfiguration()\r\n",
-					"fs = spark._jvm.FileSystem.get(hadoop_conf)\r\n",
-					"\r\n",
-					"# Define the path to the directory\r\n",
-					"path = \"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/poscsv/\"\r\n",
-					"\r\n",
-					"# Function to list files and directories\r\n",
-					"def list_files_and_dirs(directory):\r\n",
-					"    file_list = []\r\n",
-					"    try:\r\n",
-					"        status = fs.listStatus(spark._jvm.Path(directory))\r\n",
-					"        for file_status in status:\r\n",
-					"            if file_status.isFile():\r\n",
-					"                file_list.append(file_status.getPath().toString())\r\n",
-					"            elif file_status.isDirectory():\r\n",
-					"                file_list.append(file_status.getPath().toString() + \"/\")\r\n",
-					"                file_list.extend(list_files_and_dirs(file_status.getPath().toString()))\r\n",
-					"    except Exception as e:\r\n",
-					"        print(f\"Error: {e}\")\r\n",
-					"    return file_list\r\n",
-					"\r\n",
-					"# List files and directories\r\n",
-					"files_and_dirs = list_files_and_dirs(path)\r\n",
-					"\r\n",
-					"# Show all paths\r\n",
-					"for item in files_and_dirs:\r\n",
-					"    if '.csv' in item:\r\n",
-					"        print(item)\r\n",
-					""
-				],
-				"execution_count": 155
-			},
-			{
 				"cell_type": "markdown",
 				"metadata": {
 					"nteract": {
@@ -129,15 +76,36 @@
 				},
 				"source": [
 					"import pandas as pd\n",
-					"from pyspark.sql.functions import col, to_date\n",
+					"from pyspark.sql.functions import col, to_date , to_timestamp\n",
 					"from pyspark.sql.types import IntegerType, DoubleType\n",
 					"\n",
 					"csv_df  = spark.read.option(\"recursiveFileLookup\",\"true\").csv(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/poscsv/*\",header=True)\n",
 					"\n",
 					"parquet_df = spark.read \\\n",
-					"    .option(\"recursiveFileLookup\", \"true\").parquet(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/posparquet/\")"
+					"    .option(\"recursiveFileLookup\", \"true\").parquet(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/posparquet/\")\n",
+					"\n",
+					"csv_df.count() "
 				],
-				"execution_count": 168
+				"execution_count": 188
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"csv_df = csv_df.union(parquet_df)\r\n",
+					"csv_df.count() "
+				],
+				"execution_count": 189
 			},
 			{
 				"cell_type": "code",
@@ -159,9 +127,10 @@
 					"# Drop duplicates\r\n",
 					"csv_df = csv_df.dropDuplicates()\r\n",
 					"\r\n",
-					"print(df.dtypes)"
+					"print(df.dtypes)\r\n",
+					"csv_df.count() "
 				],
-				"execution_count": 169
+				"execution_count": 190
 			},
 			{
 				"cell_type": "code",
@@ -187,12 +156,12 @@
 					"csv_df = csv_df.withColumn(\"total_amount\", col(\"total_amount\").cast(DoubleType()))\r\n",
 					"\r\n",
 					"# Convert 'sale_date' column to DateType\r\n",
-					"csv_df = csv_df.withColumn(\"sale_date\", to_date(col(\"sale_date\"), \"yyyy-MM-dd\"))\r\n",
+					"csv_df = csv_df.withColumn(\"sale_date\", to_timestamp(\"sale_date\", \"yyyy-MM-dd HH:mm:ss\"))\r\n",
 					"\r\n",
 					"# Show the DataFrame and schema to verify changes\r\n",
 					"csv_df.printSchema()"
 				],
-				"execution_count": 170
+				"execution_count": 191
 			},
 			{
 				"cell_type": "code",
@@ -210,9 +179,35 @@
 				"source": [
 					"# Example transformation: Calculate total sales by region\r\n",
 					"sales_df = csv_df.groupBy(\"region\").agg({\"total_amount\": \"sum\"})\r\n",
+					"sales_df.show()"
+				],
+				"execution_count": 192
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Define the output path in your Azure Data Lake\r\n",
+					"output_path = 'abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/processed_sales_data/'\r\n",
+					"\r\n",
+					"# Write the DataFrame to a CSV file in the specified path\r\n",
+					"csv_df.write.mode(\"overwrite\").option(\"header\", \"true\").csv(output_path)\r\n",
+					"\r\n",
+					"\r\n",
+					"print(\"DataFrame saved successfully to Azure Data Lake at:\", output_path)\r\n",
 					""
 				],
-				"execution_count": 172
+				"execution_count": 193
 			}
 		]
 	}
