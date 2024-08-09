@@ -267,7 +267,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "72caf1da-45ed-46c2-a14d-22c4ecf65608"
+						"spark.autotune.trackingId": "fbdd8fad-5293-4901-9947-c387b184a96d"
 					}
 				},
 				"metadata": {
@@ -337,7 +337,7 @@
 							"csv_df.count() "
 						],
 						"outputs": [],
-						"execution_count": 249
+						"execution_count": 252
 					},
 					{
 						"cell_type": "code",
@@ -457,7 +457,7 @@
 							""
 						],
 						"outputs": [],
-						"execution_count": 239
+						"execution_count": null
 					},
 					{
 						"cell_type": "code",
@@ -476,7 +476,7 @@
 							"csv_df = spark.createDataFrame(data, schema=columns)"
 						],
 						"outputs": [],
-						"execution_count": 248
+						"execution_count": null
 					}
 				]
 			},
