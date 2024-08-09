@@ -212,6 +212,26 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 3')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT TOP (100) [sale_id]\n,[product_id]\n,[product_name]\n,[quantity]\n,[price]\n,[total_amount]\n,[sale_date]\n,[region]\n FROM [dbo].[csvsales]",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "Sales_data_db",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/Combine data')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
@@ -232,7 +252,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "2eb1bf72-3774-413c-bb01-f417374ac364"
+						"spark.autotune.trackingId": "39fd5044-ef94-4bba-926b-b04fb23dc5b7"
 					}
 				},
 				"metadata": {
@@ -264,6 +284,60 @@
 				},
 				"cells": [
 					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from py4j.java_gateway import java_import\r\n",
+							"\r\n",
+							"# Import Hadoop FileSystem classes\r\n",
+							"java_import(spark._jvm, 'org.apache.hadoop.fs.FileSystem')\r\n",
+							"java_import(spark._jvm, 'org.apache.hadoop.fs.Path')\r\n",
+							"\r\n",
+							"# Get the Hadoop FileSystem instance\r\n",
+							"hadoop_conf = spark._jsc.hadoopConfiguration()\r\n",
+							"fs = spark._jvm.FileSystem.get(hadoop_conf)\r\n",
+							"\r\n",
+							"# Define the path to the directory\r\n",
+							"path = \"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/poscsv/\"\r\n",
+							"\r\n",
+							"# Function to list files and directories\r\n",
+							"def list_files_and_dirs(directory):\r\n",
+							"    file_list = []\r\n",
+							"    try:\r\n",
+							"        status = fs.listStatus(spark._jvm.Path(directory))\r\n",
+							"        for file_status in status:\r\n",
+							"            if file_status.isFile():\r\n",
+							"                file_list.append(file_status.getPath().toString())\r\n",
+							"            elif file_status.isDirectory():\r\n",
+							"                file_list.append(file_status.getPath().toString() + \"/\")\r\n",
+							"                file_list.extend(list_files_and_dirs(file_status.getPath().toString()))\r\n",
+							"    except Exception as e:\r\n",
+							"        print(f\"Error: {e}\")\r\n",
+							"    return file_list\r\n",
+							"\r\n",
+							"# List files and directories\r\n",
+							"files_and_dirs = list_files_and_dirs(path)\r\n",
+							"\r\n",
+							"# Show all paths\r\n",
+							"for item in files_and_dirs:\r\n",
+							"    if '.csv' in item:\r\n",
+							"        print(item)\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 155
+					},
+					{
 						"cell_type": "markdown",
 						"metadata": {
 							"nteract": {
@@ -290,11 +364,15 @@
 							}
 						},
 						"source": [
-							"from pyspark.sql import SparkSession\r\n",
-							"from pyspark.sql.types import *"
+							"import pandas as pd\n",
+							"\n",
+							"csv_df  = spark.read.option(\"recursiveFileLookup\",\"true\").csv(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/poscsv/*\",header=True)\n",
+							"\n",
+							"parquet_df = spark.read \\\n",
+							"    .option(\"recursiveFileLookup\", \"true\").parquet(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/posparquet/\")"
 						],
 						"outputs": [],
-						"execution_count": 42
+						"execution_count": 156
 					},
 					{
 						"cell_type": "code",
@@ -307,16 +385,62 @@
 								"transient": {
 									"deleting": false
 								}
-							},
-							"microsoft": {
-								"language": "sparksql"
 							}
 						},
 						"source": [
-							"%%sql\r\n",
+							"# Drop na\r\n",
+							"csv_df = csv_df.dropna()\r\n",
 							"\r\n",
-							"SELECT *\r\n",
-							"FROM dbo.csvsalesf"
+							"# Drop duplicates\r\n",
+							"csv_df = csv_df.dropDuplicates()\r\n",
+							"\r\n",
+							"print(df.dtypes)"
+						],
+						"outputs": [],
+						"execution_count": 157
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"#convert type\r\n",
+							"csv_df['quantity'] = csv_df['quantity'].astype(int)\r\n",
+							"\r\n",
+							"print(df.dtypes)\r\n",
+							"\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 160
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"\r\n",
+							"csv_df['price'] = pd.to_numeric(csv_df['price'], errors='coerce')\r\n",
+							"\r\n",
+							""
 						],
 						"outputs": [],
 						"execution_count": null
@@ -335,18 +459,7 @@
 							}
 						},
 						"source": [
-							"# Define the path to the CSV files in ADLS\r\n",
-							"csv_path = \"abfss://dp203dushyantdatalake.dfs.core.windows.net/data/sales_data/poscsv/\"\r\n",
-							"\r\n",
-							"# Load the CSV files into a DataFrame\r\n",
-							"df = spark.read.format(\"csv\") \\\r\n",
-							"    .option(\"header\", \"true\") \\\r\n",
-							"    .option(\"inferSchema\", \"true\") \\\r\n",
-							"    .load(csv_path)\r\n",
-							"\r\n",
-							"# Show the first few rows of the DataFrame\r\n",
-							"df.show(100)\r\n",
-							""
+							"csv_df['total_amount'] = pd.to_numeric(csv_df['total_amount'], errors='coerce')"
 						],
 						"outputs": [],
 						"execution_count": null
