@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "33441eca-d48e-47e3-9476-69e405e35c80"
+				"spark.autotune.trackingId": "26e721cd-1a20-45f2-9fbf-4cfae2768805"
 			}
 		},
 		"metadata": {
@@ -49,6 +49,19 @@
 		},
 		"cells": [
 			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## **Read input file **"
+				]
+			},
+			{
 				"cell_type": "code",
 				"metadata": {
 					"jupyter": {
@@ -61,16 +74,22 @@
 						}
 					},
 					"microsoft": {
-						"language": "python"
-					},
-					"collapsed": false
+						"language": "sparksql"
+					}
 				},
 				"source": [
-					"%%pyspark\r\n",
-					"df = spark.read.load('abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/poscsv/**/*.csv',format='csv',header=True)\r\n",
-					"display(df.limit(10))"
+					"%%sql\r\n",
+					"\r\n",
+					"SELECT *\r\n",
+					"FROM\r\n",
+					"    OPENROWSET(\r\n",
+					"        BULK 'https://dp203dushyantdatalake.dfs.core.windows.net/data/sales_data/poscsv/**',\r\n",
+					"        FORMAT = 'CSV',\r\n",
+					"        PARSER_VERSION = '2.0',\r\n",
+					"        HEADER_ROW = TRUE\r\n",
+					"    ) AS result"
 				],
-				"execution_count": 26
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -86,35 +105,20 @@
 					}
 				},
 				"source": [
-					"# Read Parquet data\r\n",
-					"parquet_df = spark.read.parquet(\"https://dp203dushyantdatalake.dfs.core.windows.net/data/sales_data/posparquet\"\r\n",
-					"posparquet\")"
+					"# Define the path to the CSV files in ADLS\r\n",
+					"csv_path = \"abfss://dp203dushyantdatalake.dfs.core.windows.net/data/sales_data/poscsv/\"\r\n",
+					"\r\n",
+					"# Load the CSV files into a DataFrame\r\n",
+					"df = spark.read.format(\"csv\") \\\r\n",
+					"    .option(\"header\", \"true\") \\\r\n",
+					"    .option(\"inferSchema\", \"true\") \\\r\n",
+					"    .load(csv_path)\r\n",
+					"\r\n",
+					"# Show the first few rows of the DataFrame\r\n",
+					"df.show(100)\r\n",
+					""
 				],
-				"execution_count": null
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					},
-					"microsoft": {
-						"language": "python"
-					},
-					"collapsed": false
-				},
-				"source": [
-					"%%pyspark\r\n",
-					"df = spark.read.load('abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/posparquet/2021/Q1/February/sales_data_2021_Q1_February.parquet', format='parquet')\r\n",
-					"display(df.limit(10))"
-				],
-				"execution_count": 27
+				"execution_count": 28
 			}
 		]
 	}
