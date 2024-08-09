@@ -12,13 +12,13 @@
 			"driverCores": 4,
 			"executorMemory": "28g",
 			"executorCores": 4,
-			"numExecutors": 36,
-			"runAsWorkspaceSystemIdentity": true,
+			"numExecutors": 10,
+			"runAsWorkspaceSystemIdentity": false,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
-				"spark.dynamicAllocation.minExecutors": "36",
-				"spark.dynamicAllocation.maxExecutors": "36",
-				"spark.autotune.trackingId": "71e59edc-881f-4100-958f-be8e47f892ed"
+				"spark.dynamicAllocation.minExecutors": "10",
+				"spark.dynamicAllocation.maxExecutors": "10",
+				"spark.autotune.trackingId": "6ba95219-d711-4e99-a3f8-bb56c7bb3486"
 			}
 		},
 		"metadata": {
@@ -44,7 +44,7 @@
 				"nodeCount": 3,
 				"cores": 4,
 				"memory": 28,
-				"automaticScaleJobs": false
+				"automaticScaleJobs": true
 			},
 			"sessionKeepAliveTimeout": 7
 		},
@@ -90,7 +90,7 @@
 					"\n",
 					"csv_df.count() "
 				],
-				"execution_count": 2
+				"execution_count": 1
 			},
 			{
 				"cell_type": "code",
