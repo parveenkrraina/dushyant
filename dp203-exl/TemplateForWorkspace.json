@@ -198,13 +198,13 @@
 					"driverCores": 4,
 					"executorMemory": "28g",
 					"executorCores": 4,
-					"numExecutors": 36,
+					"numExecutors": 11,
 					"runAsWorkspaceSystemIdentity": false,
 					"conf": {
 						"spark.dynamicAllocation.enabled": "false",
-						"spark.dynamicAllocation.minExecutors": "36",
-						"spark.dynamicAllocation.maxExecutors": "36",
-						"spark.autotune.trackingId": "785aedf3-5b47-4e67-972c-10f7905acd48"
+						"spark.dynamicAllocation.minExecutors": "11",
+						"spark.dynamicAllocation.maxExecutors": "11",
+						"spark.autotune.trackingId": "c02a7c6d-be0c-45b9-89b8-febc96e74bda"
 					}
 				},
 				"metadata": {
@@ -277,7 +277,7 @@
 							"csv_df.count() "
 						],
 						"outputs": [],
-						"execution_count": 16
+						"execution_count": 2
 					},
 					{
 						"cell_type": "code",
@@ -395,25 +395,6 @@
 							"# Check the schema of your DataFrame\r\n",
 							"csv_df.printSchema()\r\n",
 							""
-						],
-						"outputs": [],
-						"execution_count": null
-					},
-					{
-						"cell_type": "code",
-						"metadata": {
-							"jupyter": {
-								"source_hidden": false,
-								"outputs_hidden": false
-							},
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"csv_df = spark.createDataFrame(data, schema=columns)"
 						],
 						"outputs": [],
 						"execution_count": null
