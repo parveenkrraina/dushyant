@@ -1,0 +1,129 @@
+{
+	"name": "Send_data_eventhub",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "dp203exl",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "8767a7e8-d781-427b-b444-828872d5c0d8"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/2b95d830-fc0d-4d49-82a7-83baa7f46a17/resourceGroups/dp203-exl/providers/Microsoft.Synapse/workspaces/dp203-exl/bigDataPools/dp203exl",
+				"name": "dp203exl",
+				"type": "Spark",
+				"endpoint": "https://dp203-exl.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/dp203exl",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"pip install azure-eventhub"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Path to the JSON files\r\n",
+					"json_path = \"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\"\r\n",
+					"\r\n",
+					"# Try reading the JSON files\r\n",
+					"try:\r\n",
+					"    # Read the JSON data\r\n",
+					"    cleaned_df = spark.read.json(json_path)\r\n",
+					"    cleaned_df.show(10)  # Display the DataFrame to verify\r\n",
+					"except Exception as e:\r\n",
+					"    print(\"An error occurred while reading the JSON files:\", str(e))\r\n",
+					""
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Event Hub connection parameters\r\n",
+					"event_hub_namespace = \"eventhubjsonsales.servicebus.windows.net\"\r\n",
+					"event_hub_name = \"eventhubjsonsales\"\r\n",
+					"sas_key_name = \"RootManageSharedAccessKey\"\r\n",
+					"sas_key = \"\"\r\n",
+					"\r\n",
+					"# Define Event Hub connection properties\r\n",
+					"event_hub_config = {\r\n",
+					"    \"eventhubs.connectionString\": f\"Endpoint=sb://{event_hub_namespace}/;SharedAccessKeyName={sas_key_name};SharedAccessKey={sas_key};EntityPath={event_hub_name}\"\r\n",
+					"}\r\n",
+					"\r\n",
+					"# Define the DataFrame to send\r\n",
+					"# cleaned_df = ... (assuming cleaned_df is already defined)\r\n",
+					"\r\n",
+					"# Send the DataFrame to Event Hub\r\n",
+					"try:\r\n",
+					"    cleaned_df.write \\\r\n",
+					"        .format(\"eventhubs\") \\\r\n",
+					"        .options(**event_hub_config) \\\r\n",
+					"        .save()\r\n",
+					"    print(\"DataFrame successfully sent to Event Hub.\")\r\n",
+					"except Exception as e:\r\n",
+					"    print(\"An error occurred while sending the DataFrame to Event Hub:\", str(e))\r\n",
+					""
+				],
+				"execution_count": 10
+			}
+		]
+	}
+}
