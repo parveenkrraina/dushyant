@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "6ddba1f8-89c4-4502-a82d-e9d651ab710f"
+				"spark.autotune.trackingId": "36ea8f11-7bce-47ea-8fa2-7cdbb8eee8f6"
 			}
 		},
 		"metadata": {
@@ -72,6 +72,25 @@
 						"transient": {
 							"deleting": false
 						}
+					}
+				},
+				"source": [
+					"from pyspark.sql import SparkSession\r\n",
+					"from pyspark.sql.types import *"
+				],
+				"execution_count": 41
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
 					},
 					"microsoft": {
 						"language": "sparksql"
@@ -81,15 +100,9 @@
 					"%%sql\r\n",
 					"\r\n",
 					"SELECT *\r\n",
-					"FROM\r\n",
-					"    OPENROWSET(\r\n",
-					"        BULK 'https://dp203dushyantdatalake.dfs.core.windows.net/data/sales_data/poscsv/**',\r\n",
-					"        FORMAT = 'CSV',\r\n",
-					"        PARSER_VERSION = '2.0',\r\n",
-					"        HEADER_ROW = TRUE\r\n",
-					"    ) AS result"
+					"FROM dbo.csvsalesf"
 				],
-				"execution_count": 30
+				"execution_count": 39
 			},
 			{
 				"cell_type": "code",
@@ -118,7 +131,7 @@
 					"df.show(100)\r\n",
 					""
 				],
-				"execution_count": 31
+				"execution_count": null
 			}
 		]
 	}
