@@ -12,13 +12,13 @@
 			"driverCores": 4,
 			"executorMemory": "28g",
 			"executorCores": 4,
-			"numExecutors": 9,
+			"numExecutors": 36,
 			"runAsWorkspaceSystemIdentity": true,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
-				"spark.dynamicAllocation.minExecutors": "9",
-				"spark.dynamicAllocation.maxExecutors": "9",
-				"spark.autotune.trackingId": "34f10cf1-78aa-492a-9b81-56925e281dd8"
+				"spark.dynamicAllocation.minExecutors": "36",
+				"spark.dynamicAllocation.maxExecutors": "36",
+				"spark.autotune.trackingId": "71e59edc-881f-4100-958f-be8e47f892ed"
 			}
 		},
 		"metadata": {
@@ -41,12 +41,12 @@
 					"authResource": "https://dev.azuresynapse.net"
 				},
 				"sparkVersion": "3.4",
-				"nodeCount": 10,
+				"nodeCount": 3,
 				"cores": 4,
 				"memory": 28,
 				"automaticScaleJobs": false
 			},
-			"sessionKeepAliveTimeout": 6
+			"sessionKeepAliveTimeout": 7
 		},
 		"cells": [
 			{
@@ -80,6 +80,9 @@
 					"from pyspark.sql.functions import col, to_date , to_timestamp\n",
 					"from pyspark.sql.types import IntegerType, DoubleType\n",
 					"\n",
+					"\n",
+					"\n",
+					"\n",
 					"csv_df  = spark.read.option(\"recursiveFileLookup\",\"true\").csv(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/poscsv/*\",header=True)\n",
 					"\n",
 					"parquet_df = spark.read \\\n",
@@ -87,7 +90,7 @@
 					"\n",
 					"csv_df.count() "
 				],
-				"execution_count": 1
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
