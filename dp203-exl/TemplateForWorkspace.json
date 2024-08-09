@@ -270,7 +270,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "a12dcbab-61c9-48d4-9154-2bf3fe9ca7d1"
+						"spark.autotune.trackingId": "e3bd8781-72a7-4e70-bc9d-ff5f9a27c3c2"
 					}
 				},
 				"metadata": {
@@ -298,7 +298,7 @@
 						"memory": 28,
 						"automaticScaleJobs": false
 					},
-					"sessionKeepAliveTimeout": 7
+					"sessionKeepAliveTimeout": 30
 				},
 				"cells": [
 					{
@@ -343,7 +343,7 @@
 							"csv_df.count() "
 						],
 						"outputs": [],
-						"execution_count": 53
+						"execution_count": 36
 					},
 					{
 						"cell_type": "code",
@@ -363,7 +363,7 @@
 							"csv_df.count() "
 						],
 						"outputs": [],
-						"execution_count": 54
+						"execution_count": 37
 					},
 					{
 						"cell_type": "code",
@@ -389,7 +389,7 @@
 							"csv_df.count() "
 						],
 						"outputs": [],
-						"execution_count": 55
+						"execution_count": 38
 					},
 					{
 						"cell_type": "code",
@@ -421,7 +421,7 @@
 							"csv_df.printSchema()"
 						],
 						"outputs": [],
-						"execution_count": 56
+						"execution_count": 39
 					},
 					{
 						"cell_type": "code",
@@ -442,47 +442,7 @@
 							"sales_df.show()"
 						],
 						"outputs": [],
-						"execution_count": 57
-					},
-					{
-						"cell_type": "markdown",
-						"metadata": {
-							"nteract": {
-								"transient": {
-									"deleting": false
-								}
-							}
-						},
-						"source": [
-							"# Define the table name\r\n",
-							"table_name = \"Sales_data\"\r\n",
-							"\r\n",
-							"# Drop the table if it exists\r\n",
-							"drop_table_sql = f\"DROP TABLE IF EXISTS {table_name}\"\r\n",
-							"spark.sql(drop_table_sql)\r\n",
-							"\r\n",
-							"# Create the table with appropriate schema\r\n",
-							"create_table_sql = f\"\"\"\r\n",
-							"CREATE TABLE {table_name}\r\n",
-							"(\r\n",
-							"    sale_id STRING,\r\n",
-							"    product_id STRING,\r\n",
-							"    product_name STRING,\r\n",
-							"    quantity INT,\r\n",
-							"    price DOUBLE,\r\n",
-							"    total_amount DOUBLE,\r\n",
-							"    sale_date TIMESTAMP,\r\n",
-							"    region STRING\r\n",
-							")\r\n",
-							"WITH\r\n",
-							"(\r\n",
-							"    DISTRIBUTION = ROUND_ROBIN,\r\n",
-							"    CLUSTERED COLUMNSTORE INDEX\r\n",
-							")\r\n",
-							"\"\"\"\r\n",
-							"spark.sql(create_table_sql)\r\n",
-							""
-						]
+						"execution_count": 40
 					},
 					{
 						"cell_type": "code",
@@ -498,6 +458,9 @@
 							}
 						},
 						"source": [
+							"# Limit the DataFrame to 100 rows\r\n",
+							"csv_df_limited = csv_df.limit(100)\r\n",
+							"\r\n",
 							"# Define the JDBC URL and connection properties\r\n",
 							"jdbc_url = \"jdbc:sqlserver://dp203-exl.sql.azuresynapse.net:1433;database=Sales_data_transformed;user=sqladminuser123@dp203-exl;password=Dushyant@099;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.sql.azuresynapse.net;loginTimeout=30;\"\r\n",
 							"jdbc_properties = {\r\n",
@@ -506,18 +469,19 @@
 							"    \"driver\": \"com.microsoft.sqlserver.jdbc.SQLServerDriver\"\r\n",
 							"}\r\n",
 							"\r\n",
+							"\r\n",
 							"# Write the DataFrame to the SQL Pool table\r\n",
 							"try:\r\n",
-							"    csv_df.write \\\r\n",
+							"    csv_df_limited.write \\\r\n",
 							"        .mode(\"append\") \\\r\n",
 							"        .jdbc(url=jdbc_url, table=\"Sales_data\", properties=jdbc_properties)\r\n",
-							"    print(\"DataFrame successfully written to Sales_d.\")\r\n",
+							"    print(\"DataFrame successfully written to Sales_data\")\r\n",
 							"except Exception as e:\r\n",
 							"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 							""
 						],
 						"outputs": [],
-						"execution_count": 58
+						"execution_count": 41
 					}
 				]
 			},
@@ -534,7 +498,7 @@
 				},
 				"autoScale": {
 					"enabled": false,
-					"maxNodeCount": 39,
+					"maxNodeCount": 4,
 					"minNodeCount": 3
 				},
 				"nodeCount": 3,
@@ -559,6 +523,109 @@
 			},
 			"dependsOn": [],
 			"location": "eastasia"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 2')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "SELECT TOP (1000) [sale_id]\n,[product_id]\n,[product_name]\n,[quantity]\n,[price]\n,[total_amount]\n,[sale_date]\n,[region]\n FROM [dbo].[Sales_data]",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "Sales_data_transformed",
+						"poolName": "Sales_data_transformed"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Pipeline 1')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Create table",
+						"type": "Script",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "dp203-exl-WorkspaceDefaultSqlServer",
+							"type": "LinkedServiceReference",
+							"parameters": {
+								"DBName": "Sales_data_transformed"
+							}
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": "IF OBJECT_ID('dbo.Sales_data', 'U') IS NOT NULL\n    DROP TABLE dbo.Sales_data;\n\n\nCREATE TABLE [dbo].[Sales_data]\n(\n    sale_id VARCHAR(255) NULL,\n    product_id VARCHAR(255) NULL,\n    product_name VARCHAR(255) NULL,\n    quantity INT NULL,\n    price FLOAT NULL,\n    total_amount FLOAT NULL,\n    sale_date DATETIME NULL,\n    region VARCHAR(255) NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH ([sale_date])\n)\n"
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					},
+					{
+						"name": "Combine data",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "Create table",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "Combine data",
+								"type": "NotebookReference"
+							},
+							"snapshot": true,
+							"sparkPool": {
+								"referenceName": "dp203exl",
+								"type": "BigDataPoolReference"
+							},
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": false
+							},
+							"driverSize": "Small"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/dp203-exl-WorkspaceDefaultSqlServer')]",
+				"[concat(variables('workspaceId'), '/notebooks/Combine data')]",
+				"[concat(variables('workspaceId'), '/bigDataPools/dp203exl')]"
+			]
 		}
 	]
 }
