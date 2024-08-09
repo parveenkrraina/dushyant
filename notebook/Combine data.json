@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "70c78072-ce80-4a08-baf6-dd6b1f4aefdf"
+				"spark.autotune.trackingId": "5e5d5273-a777-415b-8146-0b8ee2d6abc5"
 			}
 		},
 		"metadata": {
@@ -90,7 +90,7 @@
 					"\n",
 					"csv_df.count() "
 				],
-				"execution_count": 26
+				"execution_count": 53
 			},
 			{
 				"cell_type": "code",
@@ -109,7 +109,7 @@
 					"csv_df = csv_df.union(parquet_df)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 27
+				"execution_count": 54
 			},
 			{
 				"cell_type": "code",
@@ -134,7 +134,7 @@
 					"print(csv_df.dtypes)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 28
+				"execution_count": 55
 			},
 			{
 				"cell_type": "code",
@@ -159,13 +159,13 @@
 					"# Convert 'total_amount' column to DoubleType\r\n",
 					"csv_df = csv_df.withColumn(\"total_amount\", col(\"total_amount\").cast(DoubleType()))\r\n",
 					"\r\n",
-					"# Convert 'sale_date' column to DateType\r\n",
-					"csv_df = csv_df.withColumn(\"sale_date\", to_timestamp(\"sale_date\", \"yyyy-MM-dd HH:mm:ss\"))\r\n",
+					"# Cast the sale_date column to TIMESTAMP\r\n",
+					"csv_df = csv_df.withColumn(\"sale_date\", col(\"sale_date\").cast(\"TIMESTAMP\"))\r\n",
 					"\r\n",
 					"# Show the DataFrame and schema to verify changes\r\n",
 					"csv_df.printSchema()"
 				],
-				"execution_count": 29
+				"execution_count": 56
 			},
 			{
 				"cell_type": "code",
@@ -182,10 +182,10 @@
 				},
 				"source": [
 					"# Example transformation: Calculate total sales by region\r\n",
-					"sales_df = csv_df.groupBy(\"region\").agg({\"total_amount\": \"sum\"})\r\n",
+					"sales_df = csv_df.groupBy(\"region\",\"product_name\").agg({\"total_amount\": \"sum\"})\r\n",
 					"sales_df.show()"
 				],
-				"execution_count": 30
+				"execution_count": 57
 			},
 			{
 				"cell_type": "markdown",
@@ -249,56 +249,17 @@
 					"    \"driver\": \"com.microsoft.sqlserver.jdbc.SQLServerDriver\"\r\n",
 					"}\r\n",
 					"\r\n",
-					"\r\n",
 					"# Write the DataFrame to the SQL Pool table\r\n",
 					"try:\r\n",
 					"    csv_df.write \\\r\n",
-					"        .mode(\"overwrite\") \\\r\n",
-					"        .jdbc(url=jdbc_url, table=table_name, properties=jdbc_properties)\r\n",
-					"    print(\"DataFrame successfully written to Sales_data_transformed.dbo.Sales_data.\")\r\n",
+					"        .mode(\"append\") \\\r\n",
+					"        .jdbc(url=jdbc_url, table=\"Sales_data\", properties=jdbc_properties)\r\n",
+					"    print(\"DataFrame successfully written to Sales_d.\")\r\n",
 					"except Exception as e:\r\n",
 					"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 					""
 				],
-				"execution_count": 35
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"# Register the DataFrame as a temporary SQL table\r\n",
-					"csv_df.createOrReplaceTempView(\"temp_sales_data\")\r\n",
-					"\r\n",
-					"# Define the SQL query to create the table in the dedicated SQL pool\r\n",
-					"create_table_query = \"\"\"\r\n",
-					"CREATE TABLE Sales_data_transformed.dbo.Sales_data\r\n",
-					"WITH\r\n",
-					"(\r\n",
-					"    DISTRIBUTION = ROUND_ROBIN,\r\n",
-					"    CLUSTERED COLUMNSTORE INDEX\r\n",
-					")\r\n",
-					"AS\r\n",
-					"SELECT * FROM temp_sales_data\r\n",
-					"\"\"\"\r\n",
-					"\r\n",
-					"# Execute the query using Spark SQL\r\n",
-					"try:\r\n",
-					"    spark.sql(create_table_query)\r\n",
-					"    print(\"Table successfully created in the dedicated SQL pool.\")\r\n",
-					"except Exception as e:\r\n",
-					"    print(\"An error occurred while creating the table:\", str(e))"
-				],
-				"execution_count": 34
+				"execution_count": 58
 			}
 		]
 	}
