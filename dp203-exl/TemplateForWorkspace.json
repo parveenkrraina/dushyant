@@ -27,52 +27,6 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('workspaceName'), '/Transfer data')]",
-			"type": "Microsoft.Synapse/workspaces/pipelines",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"activities": [
-					{
-						"name": "Notebook1",
-						"type": "SynapseNotebook",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"notebook": {
-								"referenceName": "Combine data",
-								"type": "NotebookReference"
-							},
-							"snapshot": true,
-							"sparkPool": {
-								"referenceName": "dp203exl",
-								"type": "BigDataPoolReference"
-							},
-							"executorSize": "Small",
-							"conf": {
-								"spark.dynamicAllocation.enabled": true
-							},
-							"driverSize": "Small"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/notebooks/Combine data')]",
-				"[concat(variables('workspaceId'), '/bigDataPools/dp203exl')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/dp203-exl-WorkspaceDefaultSqlServer')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
@@ -244,13 +198,13 @@
 					"driverCores": 4,
 					"executorMemory": "28g",
 					"executorCores": 4,
-					"numExecutors": 10,
+					"numExecutors": 36,
 					"runAsWorkspaceSystemIdentity": false,
 					"conf": {
 						"spark.dynamicAllocation.enabled": "false",
-						"spark.dynamicAllocation.minExecutors": "10",
-						"spark.dynamicAllocation.maxExecutors": "10",
-						"spark.autotune.trackingId": "61f9036e-8c15-4fc7-bde7-001066d0ba7c"
+						"spark.dynamicAllocation.minExecutors": "36",
+						"spark.dynamicAllocation.maxExecutors": "36",
+						"spark.autotune.trackingId": "785aedf3-5b47-4e67-972c-10f7905acd48"
 					}
 				},
 				"metadata": {
@@ -323,7 +277,7 @@
 							"csv_df.count() "
 						],
 						"outputs": [],
-						"execution_count": 1
+						"execution_count": 16
 					},
 					{
 						"cell_type": "code",
@@ -460,6 +414,45 @@
 						},
 						"source": [
 							"csv_df = spark.createDataFrame(data, schema=columns)"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Register the DataFrame as a temporary SQL table\r\n",
+							"csv_df.createOrReplaceTempView(\"temp_sales_data\")\r\n",
+							"\r\n",
+							"# Define the SQL query to create the table in the dedicated SQL pool\r\n",
+							"create_table_query = \"\"\"\r\n",
+							"CREATE TABLE Sales_data_transformed.dbo.Sales_data\r\n",
+							"WITH\r\n",
+							"(\r\n",
+							"    DISTRIBUTION = ROUND_ROBIN,\r\n",
+							"    CLUSTERED COLUMNSTORE INDEX\r\n",
+							")\r\n",
+							"AS\r\n",
+							"SELECT * FROM temp_sales_data\r\n",
+							"\"\"\"\r\n",
+							"\r\n",
+							"# Execute the query using Spark SQL\r\n",
+							"try:\r\n",
+							"    spark.sql(create_table_query)\r\n",
+							"    print(\"Table successfully created in the dedicated SQL pool.\")\r\n",
+							"except Exception as e:\r\n",
+							"    print(\"An error occurred while creating the table:\", str(e))"
 						],
 						"outputs": [],
 						"execution_count": null
