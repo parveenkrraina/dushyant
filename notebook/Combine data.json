@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "46176a0a-c296-4bb0-8b2c-b12e369a73a8"
+				"spark.autotune.trackingId": "5870c136-dd11-4859-afbb-30c01eec5267"
 			}
 		},
 		"metadata": {
@@ -134,7 +134,7 @@
 					"print(csv_df.dtypes)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 7
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -165,7 +165,7 @@
 					"# Show the DataFrame and schema to verify changes\r\n",
 					"csv_df.printSchema()"
 				],
-				"execution_count": null
+				"execution_count": 9
 			},
 			{
 				"cell_type": "code",
@@ -185,6 +185,51 @@
 					"sales_df = csv_df.groupBy(\"region\").agg({\"total_amount\": \"sum\"})\r\n",
 					"sales_df.show()"
 				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Define the table name\r\n",
+					"table_name = \"Sales_data\"\r\n",
+					"\r\n",
+					"# Drop the table if it exists\r\n",
+					"drop_table_sql = f\"DROP TABLE IF EXISTS {table_name}\"\r\n",
+					"spark.sql(drop_table_sql)\r\n",
+					"\r\n",
+					"# Create the table with appropriate schema\r\n",
+					"create_table_sql = f\"\"\"\r\n",
+					"CREATE TABLE {table_name}\r\n",
+					"(\r\n",
+					"    sale_id STRING,\r\n",
+					"    product_id STRING,\r\n",
+					"    product_name STRING,\r\n",
+					"    quantity INT,\r\n",
+					"    price DOUBLE,\r\n",
+					"    total_amount DOUBLE,\r\n",
+					"    sale_date TIMESTAMP,\r\n",
+					"    region STRING\r\n",
+					")\r\n",
+					"WITH\r\n",
+					"(\r\n",
+					"    DISTRIBUTION = ROUND_ROBIN,\r\n",
+					"    CLUSTERED COLUMNSTORE INDEX\r\n",
+					")\r\n",
+					"\"\"\"\r\n",
+					"spark.sql(create_table_sql)\r\n",
+					""
+				],
 				"execution_count": null
 			},
 			{
@@ -201,11 +246,26 @@
 					}
 				},
 				"source": [
-					"# Check the schema of your DataFrame\r\n",
-					"csv_df.printSchema()\r\n",
+					"# Define the JDBC URL and connection properties\r\n",
+					"jdbc_url = \"jdbc:sqlserver://dp203-exl.sql.azuresynapse.net:1433;database=Sales_data_transformed;user=sqladminuser123@dp203-exl;password=Dushyant@099;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.sql.azuresynapse.net;loginTimeout=30;\"\r\n",
+					"jdbc_properties = {\r\n",
+					"    \"user\": \"sqladminuser123\",\r\n",
+					"    \"password\": \"Dushyant@099\",\r\n",
+					"    \"driver\": \"com.microsoft.sqlserver.jdbc.SQLServerDriver\"\r\n",
+					"}\r\n",
+					"\r\n",
+					"\r\n",
+					"# Write the DataFrame to the SQL Pool table\r\n",
+					"try:\r\n",
+					"    csv_df.write \\\r\n",
+					"        .mode(\"overwrite\") \\\r\n",
+					"        .jdbc(url=jdbc_url, table=table_name, properties=jdbc_properties)\r\n",
+					"    print(\"DataFrame successfully written to Sales_data_transformed.dbo.Sales_data.\")\r\n",
+					"except Exception as e:\r\n",
+					"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 24
 			},
 			{
 				"cell_type": "code",
@@ -243,7 +303,7 @@
 					"except Exception as e:\r\n",
 					"    print(\"An error occurred while creating the table:\", str(e))"
 				],
-				"execution_count": null
+				"execution_count": 23
 			}
 		]
 	}
