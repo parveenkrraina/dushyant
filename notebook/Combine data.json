@@ -12,13 +12,13 @@
 			"driverCores": 4,
 			"executorMemory": "28g",
 			"executorCores": 4,
-			"numExecutors": 38,
+			"numExecutors": 2,
 			"runAsWorkspaceSystemIdentity": false,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
-				"spark.dynamicAllocation.minExecutors": "38",
-				"spark.dynamicAllocation.maxExecutors": "38",
-				"spark.autotune.trackingId": "2bfc052b-93a4-4c5a-a18a-59013198ee5c"
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "704f87b9-7419-4b66-936d-bc49a7f6cf27"
 			}
 		},
 		"metadata": {
@@ -44,7 +44,7 @@
 				"nodeCount": 3,
 				"cores": 4,
 				"memory": 28,
-				"automaticScaleJobs": true
+				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 7
 		},
