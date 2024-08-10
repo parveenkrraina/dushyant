@@ -743,7 +743,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "8767a7e8-d781-427b-b444-828872d5c0d8"
+						"spark.autotune.trackingId": "fda549fd-35e7-4163-9942-61a5d9af3134"
 					}
 				},
 				"metadata": {
@@ -768,7 +768,8 @@
 						"sparkVersion": "3.4",
 						"nodeCount": 3,
 						"cores": 4,
-						"memory": 28
+						"memory": 28,
+						"automaticScaleJobs": false
 					},
 					"sessionKeepAliveTimeout": 30
 				},
@@ -794,21 +795,28 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
 						"source": [
-							"# Path to the JSON files\r\n",
-							"json_path = \"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\"\r\n",
+							"# Define the path to the JSON files in ADLS\r\n",
+							"input_path = \"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\"\r\n",
 							"\r\n",
-							"# Try reading the JSON files\r\n",
-							"try:\r\n",
-							"    # Read the JSON data\r\n",
-							"    cleaned_df = spark.read.json(json_path)\r\n",
-							"    cleaned_df.show(10)  # Display the DataFrame to verify\r\n",
-							"except Exception as e:\r\n",
-							"    print(\"An error occurred while reading the JSON files:\", str(e))\r\n",
-							""
+							"# Read the JSON files into a DataFrame\r\n",
+							"df = spark.read.json(input_path)\r\n",
+							"\r\n",
+							"df.show()"
 						],
 						"outputs": [],
-						"execution_count": 5
+						"execution_count": 13
 					},
 					{
 						"cell_type": "code",
@@ -824,33 +832,116 @@
 							}
 						},
 						"source": [
-							"# Event Hub connection parameters\r\n",
-							"event_hub_namespace = \"eventhubjsonsales.servicebus.windows.net\"\r\n",
-							"event_hub_name = \"eventhubjsonsales\"\r\n",
-							"sas_key_name = \"RootManageSharedAccessKey\"\r\n",
-							"sas_key = \"\"\r\n",
+							"# Define input and output paths\r\n",
+							"input_path = \"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\"\r\n",
+							"output_path = \"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data_Cleaned/\"\r\n",
 							"\r\n",
-							"# Define Event Hub connection properties\r\n",
-							"event_hub_config = {\r\n",
-							"    \"eventhubs.connectionString\": f\"Endpoint=sb://{event_hub_namespace}/;SharedAccessKeyName={sas_key_name};SharedAccessKey={sas_key};EntityPath={event_hub_name}\"\r\n",
-							"}\r\n",
+							"# Read JSON files into DataFrame\r\n",
+							"df = spark.read.json(input_path)\r\n",
+							"\r\n",
+							"# Data cleaning\r\n",
+							"df_cleaned = (df\r\n",
+							"    .drop(\"sale_id\")\r\n",
+							"    .fillna({\r\n",
+							"        \"product_id\": \"unknown\",\r\n",
+							"        \"product_name\": \"unknown\",\r\n",
+							"        \"quantity\": 0,\r\n",
+							"        \"total_amount\": 0.0\r\n",
+							"    })\r\n",
+							"    .filter(col(\"sale_date\").isNotNull())\r\n",
+							"    .filter(col(\"price\").isNotNull())\r\n",
+							"    .filter(col(\"region\").isNotNull())\r\n",
+							"    .filter(col(\"product_id\").isNotNull())\r\n",
+							"    .filter(col(\"product_name\").isNotNull())\r\n",
+							")\r\n",
+							"\r\n",
+							"# Write cleaned DataFrame back to ADLS\r\n",
+							"df_cleaned.write.mode(\"overwrite\").json(output_path)\r\n",
+							"\r\n",
+							"print(\"JSON files cleaned and written to:\", output_path)"
+						],
+						"outputs": [],
+						"execution_count": 18
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql import SparkSession\r\n",
+							"from pyspark.sql.functions import col\r\n",
+							"\r\n",
+							"\r\n",
+							"# Define input path and read JSON files\r\n",
+							"input_path = \"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\"\r\n",
+							"df = spark.read.json(input_path)\r\n",
+							"\r\n",
+							"# Data cleaning\r\n",
+							"df_cleaned = (df\r\n",
+							"    .drop(\"sale_id\")\r\n",
+							"    .fillna({\r\n",
+							"        \"product_id\": \"unknown\",\r\n",
+							"        \"product_name\": \"unknown\",\r\n",
+							"        \"quantity\": 0,\r\n",
+							"        \"total_amount\": 0.0\r\n",
+							"    })\r\n",
+							"    .filter(col(\"sale_date\").isNotNull())\r\n",
+							"    .filter(col(\"price\").isNotNull())\r\n",
+							"    .filter(col(\"region\").isNotNull())\r\n",
+							"    .filter(col(\"product_id\").isNotNull())\r\n",
+							"    .filter(col(\"product_name\").isNotNull())\r\n",
+							")\r\n",
+							"\r\n",
+							"# Define Event Hub connection parameters\r\n",
+							"event_hub_connection_string = (\r\n",
+							"    \"\r\n",
+							")\r\n",
 							"\r\n",
 							"# Define the DataFrame to send\r\n",
-							"# cleaned_df = ... (assuming cleaned_df is already defined)\r\n",
+							"# Ensure DataFrame is in the correct format for Event Hub\r\n",
+							"df_cleaned = df_cleaned.selectExpr(\"to_json(struct(*)) AS body\")\r\n",
 							"\r\n",
 							"# Send the DataFrame to Event Hub\r\n",
 							"try:\r\n",
-							"    cleaned_df.write \\\r\n",
+							"    df_cleaned.write \\\r\n",
 							"        .format(\"eventhubs\") \\\r\n",
-							"        .options(**event_hub_config) \\\r\n",
+							"        .option(\"eventhubs.connectionString\", event_hub_connection_string) \\\r\n",
 							"        .save()\r\n",
 							"    print(\"DataFrame successfully sent to Event Hub.\")\r\n",
 							"except Exception as e:\r\n",
-							"    print(\"An error occurred while sending the DataFrame to Event Hub:\", str(e))\r\n",
+							"    print(\"An error occurred while sending the DataFrame to Event Hub:\", str(e))"
+						],
+						"outputs": [],
+						"execution_count": 22
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"spark.sparkContext.setLogLevel(\"DEBUG\")\r\n",
 							""
 						],
 						"outputs": [],
-						"execution_count": 10
+						"execution_count": 21
 					}
 				]
 			},
