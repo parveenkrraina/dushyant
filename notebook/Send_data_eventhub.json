@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "8767a7e8-d781-427b-b444-828872d5c0d8"
+				"spark.autotune.trackingId": "0e257aa8-6d0c-4090-9578-9b69ceaca4ef"
 			}
 		},
 		"metadata": {
@@ -69,19 +69,65 @@
 			{
 				"cell_type": "code",
 				"source": [
-					"# Path to the JSON files\r\n",
-					"json_path = \"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\"\r\n",
+					"from pyspark.sql.types import StructType, StructField, StringType, DoubleType\r\n",
 					"\r\n",
-					"# Try reading the JSON files\r\n",
-					"try:\r\n",
-					"    # Read the JSON data\r\n",
-					"    cleaned_df = spark.read.json(json_path)\r\n",
-					"    cleaned_df.show(10)  # Display the DataFrame to verify\r\n",
-					"except Exception as e:\r\n",
-					"    print(\"An error occurred while reading the JSON files:\", str(e))\r\n",
+					"# Define the schema based on your JSON structure\r\n",
+					"json_schema = StructType([\r\n",
+					"    StructField(\"sale_id\", StringType(), True),\r\n",
+					"    StructField(\"product_id\", StringType(), True),\r\n",
+					"    StructField(\"product_name\", StringType(), True),\r\n",
+					"    StructField(\"quantity\", DoubleType(), True),\r\n",
+					"    StructField(\"price\", DoubleType(), True),\r\n",
+					"    StructField(\"total_amount\", DoubleType(), True),\r\n",
+					"    StructField(\"sale_date\", StringType(), True),\r\n",
+					"    StructField(\"region\", StringType(), True)\r\n",
+					"])\r\n",
+					"\r\n",
+					"# Read JSON files with the defined schema\r\n",
+					"input_path = \"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/onlinetransaction/\"\r\n",
+					"json_df = spark.read.schema(json_schema).json(input_path)\r\n",
+					"\r\n",
+					"# Display the DataFrame (optional)\r\n",
+					"json_df.show()"
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import year, month, dayofmonth, hour, minute, second, col\r\n",
+					"\r\n",
+					"\r\n",
+					"# Extract year, month, day, hour, minute, second from sale_date\r\n",
+					"cleaned_df = json_df.withColumn(\"year\", year(col(\"sale_date\"))) \\\r\n",
+					"                    .withColumn(\"month\", month(col(\"sale_date\"))) \\\r\n",
+					"                    .withColumn(\"day\", dayofmonth(col(\"sale_date\"))) \\\r\n",
+					"                    .withColumn(\"hour\", hour(col(\"sale_date\"))) \\\r\n",
+					"                    .withColumn(\"minute\", minute(col(\"sale_date\"))) \\\r\n",
+					"                    .withColumn(\"second\", second(col(\"sale_date\")))\r\n",
+					"\r\n",
+					"# Define the output path for the cleaned data\r\n",
+					"output_path = \"abfss://eventdata@dp203dushyantdatalake.dfs.core.windows.net/\"\r\n",
+					"\r\n",
+					"# Save the cleaned data in JSON format with the structured path\r\n",
+					"cleaned_df.write.mode(\"overwrite\").json(\r\n",
+					"    output_path + \"namespace/eventhub/partitionid/\"\r\n",
+					"    + \"year={year}/month={month}/day={day}/hour={hour}/minute={minute}/second={second}\"\r\n",
+					")\r\n",
 					""
 				],
-				"execution_count": 5
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
@@ -122,7 +168,7 @@
 					"    print(\"An error occurred while sending the DataFrame to Event Hub:\", str(e))\r\n",
 					""
 				],
-				"execution_count": 10
+				"execution_count": 3
 			}
 		]
 	}
