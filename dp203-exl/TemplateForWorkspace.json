@@ -723,7 +723,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/Send_data_eventhub')]",
+			"name": "[concat(parameters('workspaceName'), '/Notebook 1')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
@@ -743,7 +743,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "fda549fd-35e7-4163-9942-61a5d9af3134"
+						"spark.autotune.trackingId": "0ff9f118-d406-4e30-8d5a-ebf5bb55c68d"
 					}
 				},
 				"metadata": {
@@ -770,6 +770,190 @@
 						"cores": 4,
 						"memory": 28,
 						"automaticScaleJobs": false
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"pip install azure.eventhub"
+						],
+						"outputs": [],
+						"execution_count": 2
+					},
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							"#!/usr/bin/env python\r\n",
+							"\r\n",
+							"# --------------------------------------------------------------------------------------------\r\n",
+							"# Copyright (c) Microsoft Corporation. All rights reserved.\r\n",
+							"# Licensed under the MIT License. See License.txt in the project root for license information.\r\n",
+							"# --------------------------------------------------------------------------------------------\r\n",
+							"\r\n",
+							"\"\"\"\r\n",
+							"Examples to show how to create EventHubProducerClient/EventHubConsumerClient.\r\n",
+							"\"\"\"\r\n",
+							"import os\r\n",
+							"from azure.eventhub import (\r\n",
+							"    EventHubProducerClient,\r\n",
+							"    EventHubConsumerClient,\r\n",
+							"    TransportType,\r\n",
+							"    EventHubSharedKeyCredential\r\n",
+							")\r\n",
+							"\r\n",
+							"\r\n",
+							"CONNECTION_STRING = os.environ['']\r\n",
+							"FULLY_QUALIFIED_NAMESPACE = os.environ['eventhubjsonsales ']\r\n",
+							"EVENTHUB_NAME = os.environ['eventhubjsonsales.servicebus.windows.net']\r\n",
+							"SAS_POLICY = os.environ['EVENT_HUB_SAS_POLICY']\r\n",
+							"SAS_KEY = os.environ[]\r\n",
+							"CONSUMER_GROUP = \"$Default\"\r\n",
+							"\r\n",
+							"\r\n",
+							"def create_producer_client():\r\n",
+							"    print('Examples showing how to create producer client.')\r\n",
+							"\r\n",
+							"    # Create producer client from connection string.\r\n",
+							"\r\n",
+							"    producer_client = EventHubProducerClient.from_connection_string(\r\n",
+							"        conn_str=CONNECTION_STRING  # connection string contains EventHub name.\r\n",
+							"    )\r\n",
+							"\r\n",
+							"    # Illustration of commonly used parameters.\r\n",
+							"    producer_client = EventHubProducerClient.from_connection_string(\r\n",
+							"        conn_str=CONNECTION_STRING,\r\n",
+							"        eventhub_name=EVENTHUB_NAME,  # EventHub name should be specified if it doesn't show up in connection string.\r\n",
+							"        logging_enable=False,  # To enable network tracing log, set logging_enable to True.\r\n",
+							"        retry_total=3,  # Retry up to 3 times to re-do failed operations.\r\n",
+							"        transport_type=TransportType.Amqp  # Use Amqp as the underlying transport protocol.\r\n",
+							"    )\r\n",
+							"\r\n",
+							"    # Create producer client from constructor.\r\n",
+							"\r\n",
+							"    producer_client = EventHubProducerClient(\r\n",
+							"        fully_qualified_namespace=FULLY_QUALIFIED_NAMESPACE,\r\n",
+							"        eventhub_name=EVENTHUB_NAME,\r\n",
+							"        credential=EventHubSharedKeyCredential(\r\n",
+							"            policy=SAS_POLICY,\r\n",
+							"            key=SAS_KEY\r\n",
+							"        ),\r\n",
+							"        logging_enable=False,  # To enable network tracing log, set logging_enable to True.\r\n",
+							"        retry_total=3,  # Retry up to 3 times to re-do failed operations.\r\n",
+							"        transport_type=TransportType.Amqp  # Use Amqp as the underlying transport protocol.\r\n",
+							"    )\r\n",
+							"\r\n",
+							"    print(\"Calling producer client get eventhub properties:\", producer_client.get_eventhub_properties())\r\n",
+							"\r\n",
+							"\r\n",
+							"def create_consumer_client():\r\n",
+							"    print('Examples showing how to create consumer client.')\r\n",
+							"\r\n",
+							"    # Create consumer client from connection string.\r\n",
+							"\r\n",
+							"    consumer_client = EventHubConsumerClient.from_connection_string(\r\n",
+							"        conn_str=CONNECTION_STRING,  # connection string contains EventHub name.\r\n",
+							"        consumer_group=CONSUMER_GROUP\r\n",
+							"    )\r\n",
+							"\r\n",
+							"    # Illustration of commonly used parameters.\r\n",
+							"    consumer_client = EventHubConsumerClient.from_connection_string(\r\n",
+							"        conn_str=CONNECTION_STRING,\r\n",
+							"        consumer_group=CONSUMER_GROUP,\r\n",
+							"        eventhub_name=EVENTHUB_NAME,  # EventHub name should be specified if it doesn't show up in connection string.\r\n",
+							"        logging_enable=False,  # To enable network tracing log, set logging_enable to True.\r\n",
+							"        retry_total=3,  # Retry up to 3 times to re-do failed operations.\r\n",
+							"        transport_type=TransportType.Amqp  # Use Amqp as the underlying transport protocol.\r\n",
+							"    )\r\n",
+							"\r\n",
+							"    # Create consumer client from constructor.\r\n",
+							"\r\n",
+							"    consumer_client = EventHubConsumerClient(\r\n",
+							"        fully_qualified_namespace=FULLY_QUALIFIED_NAMESPACE,\r\n",
+							"        eventhub_name=EVENTHUB_NAME,\r\n",
+							"        consumer_group=CONSUMER_GROUP,\r\n",
+							"        credential=EventHubSharedKeyCredential(\r\n",
+							"            policy=SAS_POLICY,\r\n",
+							"            key=SAS_KEY\r\n",
+							"        ),\r\n",
+							"        logging_enable=False,  # To enable network tracing log, set logging_enable to True.\r\n",
+							"        retry_total=3,  # Retry up to 3 times to re-do failed operations.\r\n",
+							"        transport_type=TransportType.Amqp  # Use Amqp as the underlying transport protocol.\r\n",
+							"    )\r\n",
+							"\r\n",
+							"    print(\"Calling consumer client get eventhub properties:\", consumer_client.get_eventhub_properties())\r\n",
+							"\r\n",
+							"\r\n",
+							"create_producer_client()\r\n",
+							"create_consumer_client()"
+						],
+						"outputs": [],
+						"execution_count": 3
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Send_data_eventhub')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "dp203exl",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "6f0767d3-938b-4494-8934-e6ca80532917"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/2b95d830-fc0d-4d49-82a7-83baa7f46a17/resourceGroups/dp203-exl/providers/Microsoft.Synapse/workspaces/dp203-exl/bigDataPools/dp203exl",
+						"name": "dp203exl",
+						"type": "Spark",
+						"endpoint": "https://dp203-exl.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/dp203exl",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.4",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28
 					},
 					"sessionKeepAliveTimeout": 30
 				},
