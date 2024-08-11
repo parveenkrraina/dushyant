@@ -12,13 +12,13 @@
 			"driverCores": 4,
 			"executorMemory": "28g",
 			"executorCores": 4,
-			"numExecutors": 2,
+			"numExecutors": 10,
 			"runAsWorkspaceSystemIdentity": false,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
-				"spark.dynamicAllocation.minExecutors": "2",
-				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "4e2f3e7b-533a-41b1-9605-db05673bf884"
+				"spark.dynamicAllocation.minExecutors": "10",
+				"spark.dynamicAllocation.maxExecutors": "10",
+				"spark.autotune.trackingId": "05e18ae8-dbac-4b25-a282-87741105339f"
 			}
 		},
 		"metadata": {
@@ -41,7 +41,7 @@
 					"authResource": "https://dev.azuresynapse.net"
 				},
 				"sparkVersion": "3.4",
-				"nodeCount": 3,
+				"nodeCount": 20,
 				"cores": 4,
 				"memory": 28,
 				"automaticScaleJobs": false
@@ -90,7 +90,7 @@
 					"\n",
 					"csv_df.count() "
 				],
-				"execution_count": 1
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -109,7 +109,7 @@
 					"csv_df = csv_df.union(parquet_df)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 2
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -134,7 +134,7 @@
 					"print(csv_df.dtypes)\r\n",
 					"csv_df.count() "
 				],
-				"execution_count": 3
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -165,7 +165,7 @@
 					"# Show the DataFrame and schema to verify changes\r\n",
 					"csv_df.printSchema()"
 				],
-				"execution_count": 4
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -185,7 +185,7 @@
 					"sales_df = csv_df.groupBy(\"region\",\"product_name\").agg({\"total_amount\": \"sum\"})\r\n",
 					"sales_df.show()"
 				],
-				"execution_count": 5
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -220,7 +220,7 @@
 					"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 					""
 				],
-				"execution_count": 6
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -238,7 +238,7 @@
 				"source": [
 					"json_df = spark.read.option(\"recursiveFileLookup\", \"true\").json(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/onlinetransaction/\")"
 				],
-				"execution_count": 1
+				"execution_count": 13
 			},
 			{
 				"cell_type": "code",
@@ -260,7 +260,7 @@
 					"# Show a sample of the data\r\n",
 					"json_df.show()"
 				],
-				"execution_count": 2
+				"execution_count": 14
 			},
 			{
 				"cell_type": "code",
@@ -308,7 +308,7 @@
 					"# Show the cleaned DataFrame\r\n",
 					"cleaned_df.show()"
 				],
-				"execution_count": 3
+				"execution_count": 15
 			},
 			{
 				"cell_type": "code",
@@ -324,10 +324,6 @@
 					}
 				},
 				"source": [
-					"# Save cleaned data to Azure Data Lake Gen 2 in Parquet format\r\n",
-					"cleaned_df.write.mode(\"overwrite\").json(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\")\r\n",
-					"\r\n",
-					"\r\n",
 					"# Define the JDBC URL and connection properties\r\n",
 					"jdbc_url = \"jdbc:sqlserver://dp203-exl.sql.azuresynapse.net:1433;database=Sales_data_transformed;user=sqladminuser123@dp203-exl;password=Dushyant@099;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.sql.azuresynapse.net;loginTimeout=30;\"\r\n",
 					"jdbc_properties = {\r\n",
@@ -339,7 +335,7 @@
 					"\r\n",
 					"# Write the DataFrame to the SQL Pool table\r\n",
 					"try:\r\n",
-					"    csv_df.write \\\r\n",
+					"    cleaned_df.write \\\r\n",
 					"        .mode(\"append\") \\\r\n",
 					"        .jdbc(url=jdbc_url, table=\"stream_data\", properties=jdbc_properties)\r\n",
 					"    print(\"DataFrame successfully written to stream_data\")\r\n",
@@ -347,7 +343,7 @@
 					"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 					""
 				],
-				"execution_count": 4
+				"execution_count": 17
 			}
 		]
 	}
