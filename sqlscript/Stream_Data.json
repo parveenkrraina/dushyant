@@ -2,7 +2,7 @@
 	"name": "Stream_Data",
 	"properties": {
 		"content": {
-			"query": "CREATE TABLE [dbo].[stream_data]\n(\n    price int NULL,\n    product_id VARCHAR(225) null,\n    product_name VARCHAR(225) null, \n    quantity FLOAT ,\n    region VARCHAR(225) null,\n    sale_date VARCHAR(225) null,\n    sale_id VARCHAR(225) null,\n    total_amount FLOAT NULL\n\n)\nWITH\n(\n    DISTRIBUTION = HASH (sale_id),\n\n)\nGO\n",
+			"query": "CREATE TABLE [dbo].[stream_data]\n(\n    price FLOAT NULL,  \n    product_id VARCHAR(255) NULL,\n    product_name VARCHAR(255) NULL, \n    quantity FLOAT NULL,\n    region VARCHAR(255) NULL,\n    sale_date VARCHAR(255) NULL,\n    sale_id VARCHAR(255) NULL,\n    total_amount FLOAT NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH (sale_id)  -- Use HASH distribution for better performance on large datasets\n    \n)\nGO\n",
 			"metadata": {
 				"language": "sql"
 			},
