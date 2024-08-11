@@ -437,7 +437,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "10",
 						"spark.dynamicAllocation.maxExecutors": "10",
-						"spark.autotune.trackingId": "edf7c020-3587-4df7-9399-538be03ded63"
+						"spark.autotune.trackingId": "e7c02d08-557a-46a3-9810-9bba009f39ce"
 					}
 				},
 				"metadata": {
@@ -462,8 +462,7 @@
 						"sparkVersion": "3.4",
 						"nodeCount": 20,
 						"cores": 4,
-						"memory": 28,
-						"automaticScaleJobs": false
+						"memory": 28
 					},
 					"sessionKeepAliveTimeout": 30
 				},
