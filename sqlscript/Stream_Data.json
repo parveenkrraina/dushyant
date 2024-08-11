@@ -1,0 +1,17 @@
+{
+	"name": "Stream_Data",
+	"properties": {
+		"content": {
+			"query": "CREATE TABLE [dbo].[stream_data]\n(\n    price int NOT NULL,\n    product_id VARCHAR(225) not null,\n    product_name VARCHAR(225) not null, \n    quantity double not NULL,\n    region VARCHAR(225) not null,\n    sale_date VARCHAR(225) not null,\n    sale_id VARCHAR(225) not null,\n    total_amount double not NULL\n\n)\nWITH\n(\n    DISTRIBUTION = HASH (col1),\n\n)\nGO\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Sales_data_transformed",
+				"poolName": "Sales_data_transformed"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
