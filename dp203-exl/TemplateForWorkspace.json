@@ -391,13 +391,13 @@
 					"driverCores": 4,
 					"executorMemory": "28g",
 					"executorCores": 4,
-					"numExecutors": 2,
+					"numExecutors": 10,
 					"runAsWorkspaceSystemIdentity": false,
 					"conf": {
 						"spark.dynamicAllocation.enabled": "false",
-						"spark.dynamicAllocation.minExecutors": "2",
-						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "f0068095-df08-46f1-a163-f92491f9ee27"
+						"spark.dynamicAllocation.minExecutors": "10",
+						"spark.dynamicAllocation.maxExecutors": "10",
+						"spark.autotune.trackingId": "505bbe06-c711-4d62-9cdb-b447ec53e500"
 					}
 				},
 				"metadata": {
@@ -420,7 +420,7 @@
 							"authResource": "https://dev.azuresynapse.net"
 						},
 						"sparkVersion": "3.4",
-						"nodeCount": 3,
+						"nodeCount": 20,
 						"cores": 4,
 						"memory": 28,
 						"automaticScaleJobs": false
@@ -470,7 +470,7 @@
 							"csv_df.count() "
 						],
 						"outputs": [],
-						"execution_count": 1
+						"execution_count": 3
 					},
 					{
 						"cell_type": "code",
@@ -490,7 +490,7 @@
 							"csv_df.count() "
 						],
 						"outputs": [],
-						"execution_count": 2
+						"execution_count": 4
 					},
 					{
 						"cell_type": "code",
@@ -516,7 +516,7 @@
 							"csv_df.count() "
 						],
 						"outputs": [],
-						"execution_count": 3
+						"execution_count": 5
 					},
 					{
 						"cell_type": "code",
@@ -548,7 +548,7 @@
 							"csv_df.printSchema()"
 						],
 						"outputs": [],
-						"execution_count": 4
+						"execution_count": 6
 					},
 					{
 						"cell_type": "code",
@@ -569,7 +569,7 @@
 							"sales_df.show()"
 						],
 						"outputs": [],
-						"execution_count": 5
+						"execution_count": 7
 					},
 					{
 						"cell_type": "code",
@@ -605,7 +605,7 @@
 							""
 						],
 						"outputs": [],
-						"execution_count": 6
+						"execution_count": null
 					},
 					{
 						"cell_type": "code",
@@ -624,7 +624,7 @@
 							"json_df = spark.read.option(\"recursiveFileLookup\", \"true\").json(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/sales_data/onlinetransaction/\")"
 						],
 						"outputs": [],
-						"execution_count": 1
+						"execution_count": 13
 					},
 					{
 						"cell_type": "code",
@@ -647,7 +647,7 @@
 							"json_df.show()"
 						],
 						"outputs": [],
-						"execution_count": 2
+						"execution_count": 14
 					},
 					{
 						"cell_type": "code",
@@ -696,7 +696,7 @@
 							"cleaned_df.show()"
 						],
 						"outputs": [],
-						"execution_count": 3
+						"execution_count": 15
 					},
 					{
 						"cell_type": "code",
@@ -712,12 +712,27 @@
 							}
 						},
 						"source": [
-							"# Save cleaned data to Azure Data Lake Gen 2 in Parquet format\r\n",
-							"cleaned_df.write.mode(\"overwrite\").json(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\")\r\n",
+							"# Define the JDBC URL and connection properties\r\n",
+							"jdbc_url = \"jdbc:sqlserver://dp203-exl.sql.azuresynapse.net:1433;database=Sales_data_transformed;user=sqladminuser123@dp203-exl;password=Dushyant@099;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.sql.azuresynapse.net;loginTimeout=30;\"\r\n",
+							"jdbc_properties = {\r\n",
+							"    \"user\": \"sqladminuser123\",\r\n",
+							"    \"password\": \"Dushyant@099\",\r\n",
+							"    \"driver\": \"com.microsoft.sqlserver.jdbc.SQLServerDriver\"\r\n",
+							"}\r\n",
+							"\r\n",
+							"\r\n",
+							"# Write the DataFrame to the SQL Pool table\r\n",
+							"try:\r\n",
+							"    cleaned_df.write \\\r\n",
+							"        .mode(\"append\") \\\r\n",
+							"        .jdbc(url=jdbc_url, table=\"stream_data\", properties=jdbc_properties)\r\n",
+							"    print(\"DataFrame successfully written to stream_data\")\r\n",
+							"except Exception as e:\r\n",
+							"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 							""
 						],
 						"outputs": [],
-						"execution_count": 4
+						"execution_count": 17
 					}
 				]
 			},
@@ -927,7 +942,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "ce1466e6-b173-49b6-aac8-489e9e39e53f"
+						"spark.autotune.trackingId": "5a90e8bb-c5dd-4619-bfde-b4994c59dabb"
 					}
 				},
 				"metadata": {
@@ -950,9 +965,10 @@
 							"authResource": "https://dev.azuresynapse.net"
 						},
 						"sparkVersion": "3.4",
-						"nodeCount": 3,
+						"nodeCount": 20,
 						"cores": 4,
-						"memory": 28
+						"memory": 28,
+						"automaticScaleJobs": false
 					},
 					"sessionKeepAliveTimeout": 30
 				},
@@ -1166,6 +1182,46 @@
 			},
 			"dependsOn": [],
 			"location": "eastasia"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Stream_Data')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[stream_data]\n(\n    price FLOAT NULL,  \n    product_id VARCHAR(255) NULL,\n    product_name VARCHAR(255) NULL, \n    quantity FLOAT NULL,\n    region VARCHAR(255) NULL,\n    sale_date VARCHAR(255) NULL,\n    sale_id VARCHAR(255) NULL,\n    total_amount FLOAT NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH (sale_id)  -- Use HASH distribution for better performance on large datasets\n    \n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "Sales_data_transformed",
+						"poolName": "Sales_data_transformed"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 3')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "DROP TABLE [dbo].[stream_data]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE TABLE [dbo].[stream_data]\n( \n\t[price] [float]  NULL,\n\t[product_id] [varchar](255)  NULL,\n\t[product_name] [varchar](255)  NULL,\n\t[quantity] [float]  NULL,\n\t[region] [varchar](255)  NULL,\n\t[sale_date] [varchar](255)  NULL,\n\t[sale_id] [varchar](255)  NULL,\n\t[total_amount] [float]  NULL\n)\nWITH\n(\n\tDISTRIBUTION = HASH ( [sale_id] )\n\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "Sales_data_transformed",
+						"poolName": "Sales_data_transformed"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
 		}
 	]
 }
