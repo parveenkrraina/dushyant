@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 3",
+	"properties": {
+		"content": {
+			"query": "DROP TABLE [dbo].[stream_data]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE TABLE [dbo].[stream_data]\n( \n\t[price] [float]  NULL,\n\t[product_id] [varchar](255)  NULL,\n\t[product_name] [varchar](255)  NULL,\n\t[quantity] [float]  NULL,\n\t[region] [varchar](255)  NULL,\n\t[sale_date] [varchar](255)  NULL,\n\t[sale_id] [varchar](255)  NULL,\n\t[total_amount] [float]  NULL\n)\nWITH\n(\n\tDISTRIBUTION = HASH ( [sale_id] )\n\n)\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "Sales_data_transformed",
+				"poolName": "Sales_data_transformed"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
