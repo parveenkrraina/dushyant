@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "d6df56db-2f61-4b03-8e67-28cb3257ecbf"
+				"spark.autotune.trackingId": "4e2f3e7b-533a-41b1-9605-db05673bf884"
 			}
 		},
 		"metadata": {
@@ -326,6 +326,25 @@
 				"source": [
 					"# Save cleaned data to Azure Data Lake Gen 2 in Parquet format\r\n",
 					"cleaned_df.write.mode(\"overwrite\").json(\"abfss://data@dp203dushyantdatalake.dfs.core.windows.net/Event_Hub_Data/\")\r\n",
+					"\r\n",
+					"\r\n",
+					"# Define the JDBC URL and connection properties\r\n",
+					"jdbc_url = \"jdbc:sqlserver://dp203-exl.sql.azuresynapse.net:1433;database=Sales_data_transformed;user=sqladminuser123@dp203-exl;password=Dushyant@099;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.sql.azuresynapse.net;loginTimeout=30;\"\r\n",
+					"jdbc_properties = {\r\n",
+					"    \"user\": \"sqladminuser123\",\r\n",
+					"    \"password\": \"Dushyant@099\",\r\n",
+					"    \"driver\": \"com.microsoft.sqlserver.jdbc.SQLServerDriver\"\r\n",
+					"}\r\n",
+					"\r\n",
+					"\r\n",
+					"# Write the DataFrame to the SQL Pool table\r\n",
+					"try:\r\n",
+					"    csv_df.write \\\r\n",
+					"        .mode(\"append\") \\\r\n",
+					"        .jdbc(url=jdbc_url, table=\"stream_data\", properties=jdbc_properties)\r\n",
+					"    print(\"DataFrame successfully written to stream_data\")\r\n",
+					"except Exception as e:\r\n",
+					"    print(\"An error occurred while writing the DataFrame to SQL Pool:\", str(e))\r\n",
 					""
 				],
 				"execution_count": 4
