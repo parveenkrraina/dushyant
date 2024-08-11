@@ -356,6 +356,46 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/SQL script 3')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "DROP TABLE [dbo].[stream_data]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE TABLE [dbo].[stream_data]\n( \n\t[price] [float]  NULL,\n\t[product_id] [varchar](255)  NULL,\n\t[product_name] [varchar](255)  NULL,\n\t[quantity] [float]  NULL,\n\t[region] [varchar](255)  NULL,\n\t[sale_date] [varchar](255)  NULL,\n\t[sale_id] [varchar](255)  NULL,\n\t[total_amount] [float]  NULL\n)\nWITH\n(\n\tDISTRIBUTION = HASH ( [sale_id] )\n\n)\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "Sales_data_transformed",
+						"poolName": "Sales_data_transformed"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Stream_Data')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "CREATE TABLE [dbo].[stream_data]\n(\n    price FLOAT NULL,  \n    product_id VARCHAR(255) NULL,\n    product_name VARCHAR(255) NULL, \n    quantity FLOAT NULL,\n    region VARCHAR(255) NULL,\n    sale_date VARCHAR(255) NULL,\n    sale_id VARCHAR(255) NULL,\n    total_amount FLOAT NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH (sale_id)  -- Use HASH distribution for better performance on large datasets\n    \n)\nGO\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "Sales_data_transformed",
+						"poolName": "Sales_data_transformed"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/ext_database')]",
 			"type": "Microsoft.Synapse/workspaces/sqlscripts",
 			"apiVersion": "2019-06-01-preview",
@@ -397,7 +437,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "10",
 						"spark.dynamicAllocation.maxExecutors": "10",
-						"spark.autotune.trackingId": "505bbe06-c711-4d62-9cdb-b447ec53e500"
+						"spark.autotune.trackingId": "edf7c020-3587-4df7-9399-538be03ded63"
 					}
 				},
 				"metadata": {
@@ -942,7 +982,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "5a90e8bb-c5dd-4619-bfde-b4994c59dabb"
+						"spark.autotune.trackingId": "ce1466e6-b173-49b6-aac8-489e9e39e53f"
 					}
 				},
 				"metadata": {
@@ -965,10 +1005,9 @@
 							"authResource": "https://dev.azuresynapse.net"
 						},
 						"sparkVersion": "3.4",
-						"nodeCount": 20,
+						"nodeCount": 3,
 						"cores": 4,
-						"memory": 28,
-						"automaticScaleJobs": false
+						"memory": 28
 					},
 					"sessionKeepAliveTimeout": 30
 				},
@@ -1157,10 +1196,10 @@
 				},
 				"autoScale": {
 					"enabled": false,
-					"maxNodeCount": 4,
+					"maxNodeCount": 51,
 					"minNodeCount": 3
 				},
-				"nodeCount": 3,
+				"nodeCount": 20,
 				"nodeSize": "Small",
 				"nodeSizeFamily": "MemoryOptimized",
 				"sparkVersion": "3.4",
@@ -1182,46 +1221,6 @@
 			},
 			"dependsOn": [],
 			"location": "eastasia"
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/Stream_Data')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "CREATE TABLE [dbo].[stream_data]\n(\n    price FLOAT NULL,  \n    product_id VARCHAR(255) NULL,\n    product_name VARCHAR(255) NULL, \n    quantity FLOAT NULL,\n    region VARCHAR(255) NULL,\n    sale_date VARCHAR(255) NULL,\n    sale_id VARCHAR(255) NULL,\n    total_amount FLOAT NULL\n)\nWITH\n(\n    DISTRIBUTION = HASH (sale_id)  -- Use HASH distribution for better performance on large datasets\n    \n)\nGO\n",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "Sales_data_transformed",
-						"poolName": "Sales_data_transformed"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/SQL script 3')]",
-			"type": "Microsoft.Synapse/workspaces/sqlscripts",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"content": {
-					"query": "DROP TABLE [dbo].[stream_data]\nGO\n\nSET ANSI_NULLS ON\nGO\nSET QUOTED_IDENTIFIER ON\nGO\n\nCREATE TABLE [dbo].[stream_data]\n( \n\t[price] [float]  NULL,\n\t[product_id] [varchar](255)  NULL,\n\t[product_name] [varchar](255)  NULL,\n\t[quantity] [float]  NULL,\n\t[region] [varchar](255)  NULL,\n\t[sale_date] [varchar](255)  NULL,\n\t[sale_id] [varchar](255)  NULL,\n\t[total_amount] [float]  NULL\n)\nWITH\n(\n\tDISTRIBUTION = HASH ( [sale_id] )\n\n)\nGO",
-					"metadata": {
-						"language": "sql"
-					},
-					"currentConnection": {
-						"databaseName": "Sales_data_transformed",
-						"poolName": "Sales_data_transformed"
-					},
-					"resultLimit": 5000
-				},
-				"type": "SqlQuery"
-			},
-			"dependsOn": []
 		}
 	]
 }
